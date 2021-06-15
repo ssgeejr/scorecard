@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+    scorecarddb:
+        image: mysql:8.0.25
+        container_name: scorecarddb
+        tty: true
+        restart: always
+        environment:
+            MYSQL_DATABASE: 'scorecard'
+            MYSQL_USER: 'scorecard'
+            MYSQL_PASSWORD: 'scorecard'
+            MYSQL_ROOT_PASSWORD: 'threeblindmice'
+        volumes:
+            - ./mysql:/docker-entrypoint-initdb.d/:ro
+            - /opt/apps/scorecarddb:/var/lib/mysql
+        ports:
+            - 3306:3306
+#    scorecardui:
+#        image: scorecardui
+#        container_name: scorecardui
+#        tty: true
+#        ports:
+#            - 80:8080
+#        restart: always
+#        depends_on:
+#            - scorecarddb

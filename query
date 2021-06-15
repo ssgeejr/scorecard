@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker exec -ti scorecarddb mysql -pthreeblindmice -e "show databases"
