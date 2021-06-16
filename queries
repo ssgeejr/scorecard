@@ -1,0 +1,14 @@
+select 
+a.pluginid, count(*) as cnt,
+b.risk as risk, b.vulname as vulnerability
+from rawdata a, plugin b 
+where 
+a.pluginid = b.pluginid 
+and b.risk != 'None'
+group by 
+a.pluginid
+order by 
+b.riskid, cnt desc 
+
+
+

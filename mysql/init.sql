@@ -11,5 +11,7 @@ CREATE TABLE rawdata (
 CREATE TABLE plugin (
        	pluginid varchar(8) NOT NULL,
 	vulname varchar(64) NOT NULL,
+	risk varchar(12) NOT NULL,
+	riskid int,
 	PRIMARY KEY (pluginid)
 );
