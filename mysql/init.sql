@@ -4,6 +4,12 @@ USE scorecard;
 
 CREATE TABLE rawdata (
        	pluginid varchar(8) NOT NULL,
-	host varchar(15) NOT NULL,
+	host varchar(32) NOT NULL,
 	rptdate DATE NOT NULL
+);
+
+CREATE TABLE plugin (
+       	pluginid varchar(8) NOT NULL,
+	vulname varchar(64) NOT NULL,
+	PRIMARY KEY (pluginid)
 );
