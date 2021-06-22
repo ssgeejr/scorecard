@@ -32,21 +32,21 @@ def main():
            database='scorecard')
            print(cnx)
            mycursor = cnx.cursor()
-           sql = "insert into rawdata(pluginid,host,riskid,rptdate) values (%s, %s, %s)"
-           #sql = "insert into rawdata(pluginid,host,vulname,riskid,rptdate) values (%s, %s, %s, %s, %s)"
+           sql = "insert ignore into rawdata(datakey,pluginid,host,riskid,rptdate) values (%s, %s, %s, %s, %s)"
            count = 0
            for lines in csvFile:
                if count > 0:
-                   record = (lines[0],lines[4],fetchrefid(lines[3]),dt)
-                   #print(record)
+                   datakey = lines[0]+lines[4] 
+                   record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dt)
+           #        print(record)
                    #print(lines[0] + ' ' + lines[4] + ' ' + dt)
                    mycursor.execute(sql, record)
+                   #if count > 10: return
                    if (count % 1000) == 0:
                        cnx.commit()
                        print("commiting another 1000 records: " , count)
                count+=1
 
-           cnx.commit()
            print("Total records loaded: " , count)
        except Error as e:
            print('Error at line: ', count)

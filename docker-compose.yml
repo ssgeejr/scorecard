@@ -10,6 +10,8 @@ services:
             MYSQL_USER: 'scorecard'
             MYSQL_PASSWORD: 'scorecard'
             MYSQL_ROOT_PASSWORD: 'threeblindmice'
+        security_opt:
+            - seccomp:unconfined
         volumes:
             - ./mysql:/docker-entrypoint-initdb.d/:ro
             - /opt/apps/scorecarddb:/var/lib/mysql

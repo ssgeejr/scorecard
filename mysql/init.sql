@@ -3,10 +3,12 @@ SET GLOBAL time_zone = 'America/Chicago';
 USE scorecard;
 
 CREATE TABLE rawdata (
+	datakey varchar(40) NOT NULL,
        	pluginid varchar(8) NOT NULL,
 	host varchar(32) NOT NULL,
 	riskid int NOT NULL,
-	rptdate DATE NOT NULL
+	rptdate DATE NOT NULL,
+	PRIMARY KEY (datakey)
 );
 
 CREATE TABLE plugin (
