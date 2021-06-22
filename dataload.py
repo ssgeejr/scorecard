@@ -17,6 +17,8 @@ def fetchrefid(risk):
 
 def main():
    dt = time.strftime('%Y%m%d') 
+   dtkey = time.strftime('%m%d%y')
+   return
    # opening the CSV file
    #with open('../sc.data/data.csv.old', mode ='r')as file:
    with open('../sc.data/data.csv', mode ='r')as file:
@@ -36,7 +38,7 @@ def main():
            count = 0
            for lines in csvFile:
                if count > 0:
-                   datakey = lines[0]+lines[4] 
+                   datakey = dtkey+lines[0]+lines[4] 
                    record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dt)
            #        print(record)
                    #print(lines[0] + ' ' + lines[4] + ' ' + dt)
