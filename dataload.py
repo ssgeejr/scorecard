@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-import csv, time
+import csv, time, sys, getopt
 import mysql.connector
 from mysql.connector import connect, Error
 
+
+dtkey = time.strftime('%m%y')
+userDefinedKey = False
 
 def fetchrefid(risk):
     result = -99;
@@ -14,13 +17,19 @@ def fetchrefid(risk):
     elif risk == 'None': result = -1
     return result
 
+def loadRawData():
+   global userDefinedKey 
+   if userDefinedKey:
+       print('using User Defined Key')
 
-def main():
    dt = time.strftime('%Y%m%d') 
-   dtkey = time.strftime('%m%d%y')
-   return
+   #dtkey = time.strftime('%m%y')
    # opening the CSV file
    #with open('../sc.data/data.csv.old', mode ='r')as file:
+
+   return
+
+
    with open('../sc.data/data.csv', mode ='r')as file:
 
    # reading the CSV file
@@ -34,12 +43,12 @@ def main():
            database='scorecard')
            print(cnx)
            mycursor = cnx.cursor()
-           sql = "insert ignore into rawdata(datakey,pluginid,host,riskid,rptdate) values (%s, %s, %s, %s, %s)"
+           sql = "insert ignore into rawdata(datakey,pluginid,host,riskid,rptdatekey,rptdate) values (%s, %s, %s, %s, %s, %s)"
            count = 0
            for lines in csvFile:
                if count > 0:
                    datakey = dtkey+lines[0]+lines[4] 
-                   record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dt)
+                   record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dtkey,dt)
            #        print(record)
                    #print(lines[0] + ' ' + lines[4] + ' ' + dt)
                    mycursor.execute(sql, record)
@@ -58,5 +67,24 @@ def main():
            print(e)
        
 
+
+def main(argv):
+   global dtkey
+   global userDefinedKey
+   try:
+      opts, args = getopt.getopt(argv,"hp:",["pkey="])
+   except getopt.GetoptError:
+      print ('dataloader.py -p <date>')
+      sys.exit(2)
+   for opt, arg in opts:
+      if opt == '-h':
+         print ('dataloade.py -p <date>')
+         sys.exit()
+      elif opt in ("-p", "--pkey"):
+         userDefinedKey = True 
+         dtkey = arg
+   print ('Month Year Key: ', dtkey)
+   loadRawData()
+
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
