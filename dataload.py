@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import csv, time, sys, getopt
+import csv, time, sys, getopt, glob, os
 import mysql.connector
 from mysql.connector import connect, Error
+from pathlib import Path
 
 
 dtkey = time.strftime('%m%y')
@@ -17,20 +18,39 @@ def fetchrefid(risk):
     elif risk == 'None': result = -1
     return result
 
-def loadRawData():
-   global userDefinedKey 
-   if userDefinedKey:
-       print('using User Defined Key')
 
-   dt = time.strftime('%Y%m%d') 
-   #dtkey = time.strftime('%m%y')
-   # opening the CSV file
-   #with open('../sc.data/data.csv.old', mode ='r')as file:
+def fetchFileStack():
+   global dtkey
+   global userDefinedKey 
+   working_dir = "/opt/apps/sc.data"
+   os.chdir(working_dir)
+   for file in glob.glob("*.csv"):
+       print(file)
+       old_file = os.path.join(working_dir,file)
+       new_file = os.path.join(working_dir,file+'.old')
+       print('Using data file: ', os.path.basename(old_file))
+       loadRawData(old_file)
+
+       if userDefinedKey:
+           print('User Defined Key: ',dtkey)
+       else:
+           dtkey = Path(old_file).stem
+
+       print('Using Filename Key: ',dtkey)
+
+       print('New File: ',new_file)
+       print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
+       # os.rename(old_file, new_file)
+
+def loadRawData(datafile):
+   global dtkey
+
+   print('DTKEY: ',dtkey)
 
    return
+   dt = time.strftime('%Y%m%d') 
 
-
-   with open('../sc.data/data.csv', mode ='r')as file:
+   with open(datafile, mode ='r')as file:
 
    # reading the CSV file
        csvFile = csv.reader(file)
@@ -83,8 +103,8 @@ def main(argv):
       elif opt in ("-p", "--pkey"):
          userDefinedKey = True 
          dtkey = arg
-   print ('Month Year Key: ', dtkey)
-   loadRawData()
+   print ('DTKEY: ', dtkey)
+   fetchFileStack()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
