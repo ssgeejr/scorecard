@@ -25,29 +25,26 @@ def fetchFileStack():
    working_dir = "/opt/apps/sc.data"
    os.chdir(working_dir)
    for file in glob.glob("*.csv"):
-       print(file)
+       print('***** LOADING DATA FILE ', file, ' *****')
        old_file = os.path.join(working_dir,file)
        new_file = os.path.join(working_dir,file+'.old')
        print('Using data file: ', os.path.basename(old_file))
-       loadRawData(old_file)
 
        if userDefinedKey:
            print('User Defined Key: ',dtkey)
        else:
            dtkey = Path(old_file).stem
 
-       print('Using Filename Key: ',dtkey)
+       loadRawData(old_file)
+       #print('>>2DTKEY: ',dtkey)
 
        print('New File: ',new_file)
        print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-       # os.rename(old_file, new_file)
+       os.rename(old_file, new_file)
 
 def loadRawData(datafile):
    global dtkey
 
-   print('DTKEY: ',dtkey)
-
-   return
    dt = time.strftime('%Y%m%d') 
 
    with open(datafile, mode ='r')as file:
@@ -55,6 +52,10 @@ def loadRawData(datafile):
    # reading the CSV file
        csvFile = csv.reader(file)
    
+
+
+       print('USING DTKEY: ', dtkey)
+       #return
    # displaying the contents of the CSV file
        try:
            cnx = mysql.connector.connect(user='scorecard', 
@@ -103,7 +104,6 @@ def main(argv):
       elif opt in ("-p", "--pkey"):
          userDefinedKey = True 
          dtkey = arg
-   print ('DTKEY: ', dtkey)
    fetchFileStack()
 
 if __name__ == "__main__":
