@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import csv, time, sys, getopt, glob, os
+import csv, time, sys, getopt, glob, os, datetime
 import mysql.connector
 from mysql.connector import connect, Error
 from pathlib import Path
@@ -17,6 +17,11 @@ def fetchrefid(risk):
     elif risk == 'Low': result = 3
     elif risk == 'None': result = -1
     return result
+
+def fetchTableName(key):
+    tablename = datetime.date(1900, int(key[:2]), 1).strftime('%b').lower() + key[2:]
+    print(tablename)
+    return tablename
 
 
 def fetchFileStack():
@@ -36,11 +41,10 @@ def fetchFileStack():
            dtkey = Path(old_file).stem
 
        loadRawData(old_file)
-       #print('>>2DTKEY: ',dtkey)
 
        print('New File: ',new_file)
        print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-       os.rename(old_file, new_file)
+       #os.rename(old_file, new_file)
 
 def loadRawData(datafile):
    global dtkey
@@ -64,15 +68,46 @@ def loadRawData(datafile):
            database='scorecard')
            print(cnx)
            mycursor = cnx.cursor()
-           sql = "insert ignore into rawdata(datakey,pluginid,host,riskid,rptdatekey,rptdate) values (%s, %s, %s, %s, %s, %s)"
+
+
+
+           print('>>DTKEY: ',dtkey)
+           tablename = fetchTableName(dtkey)
+           print('Dropping/Creating Table: ', tablename)
+           dropTable = ("DROP TABLE IF EXISTS " + tablename )
+           createTable = ("CREATE TABLE " + tablename + " ("
+           "datakey varchar(46) NOT NULL,"
+           "pluginid varchar(8) NOT NULL,"
+           "host varchar(32) NOT NULL,"
+           "riskid int NOT NULL,"
+           "dtkey varchar(8) NOT NULL,"
+           "rptdate DATE NOT NULL,"
+           "PRIMARY KEY (datakey)"
+           ");")
+
+           print(dropTable)
+           mycursor.execute(dropTable)
+           cnx.commit()
+
+           print(createTable)
+           mycursor.execute(createTable)
+           cnx.commit()
+
+           sql = "insert ignore into " + tablename + "(datakey,pluginid,host,riskid,dtkey,rptdate) values (%s, %s, %s, %s, %s, %s)"
+           print(sql)
+
+           xref = "insert ignore into plugin (pluginid,vulname,risk,riskid) values(%s,%s,%s,%s)"
            count = 0
            for lines in csvFile:
                if count > 0:
-                   datakey = dtkey+lines[0]+lines[4] 
+                   datakey = lines[0]+lines[4] 
                    record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dtkey,dt)
+                   vulname = lines[7]
+                   xrecord = (lines[0],vulname[:64],lines[3],fetchrefid(lines[3]))
            #        print(record)
                    #print(lines[0] + ' ' + lines[4] + ' ' + dt)
                    mycursor.execute(sql, record)
+                   mycursor.execute(xref, xrecord)
                    #if count > 10: return
                    if (count % 1000) == 0:
                        cnx.commit()

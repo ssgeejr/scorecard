@@ -2,7 +2,7 @@ SET GLOBAL time_zone = 'America/Chicago';
 
 USE scorecard;
 
-CREATE TABLE rawdata (
+CREATE TABLE _rawdata (
 	datakey varchar(46) NOT NULL,
        	pluginid varchar(8) NOT NULL,
 	host varchar(32) NOT NULL,
