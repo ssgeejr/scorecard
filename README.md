@@ -28,6 +28,74 @@ jun21 a,
 risk b
 where a.riskid >= 0
 and a.riskid = b.riskid
-group by a.riskid ```
+group by a.riskid
+```
+``` select
+	count(*) as 'Total',
+	b.risk as 'Risk'
+from 
+	rawdata a, risk b
+where
+	a.riskid = b.riskid
+group by
+	b.riskid
+order by
+    b.riskid asc
+```
+
+``` select
+host,
+count(*) as 'total'
+from
+jun21
+where
+pluginid in(
+select
+pluginid
+from
+plugin
+where
+vulname like '%Adobe Reader%'
+and riskid = 0
+)
+and riskid = 0
+group by 
+host
+```
+
+``` select count(*)
+from jun21
+where 
+riskid = 3
+and
+datakey not in (
+select datakey
+from
+may21
+where 
+riskid = 3)
+```
+
+``` select
+	distinct(host)
+from 
+	rawdata
+where
+	riskid = 0
+    and host like '%temp%wmmc%'
+```
+
+``` select 
+a.pluginid, count(*) as cnt,
+b.risk as risk, b.vulname as vulnerability
+from rawdata a, plugin b 
+where 
+a.pluginid = b.pluginid 
+and b.risk != 'None'
+group by 
+a.pluginid
+order by 
+b.riskid, cnt desc 
+```
 
 
