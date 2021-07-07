@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker exec -ti scorecarddb mysql -pthreeblindmice -e "show databases"
+docker exec -ti tethysdb mysql -pthreeblindmice -e "show databases"
