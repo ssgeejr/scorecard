@@ -102,4 +102,42 @@ order by
 b.riskid, cnt desc 
 ```
 
+CONFIGURATION 
 
+```#!/bin/bash
+
+UNAME=""
+
+echo "%devops ALL=(ALL) NOPASSWD: LOG_INPUT: ALL"  > /etc/sudoers.d/wmmc-devops
+groupadd devops
+
+
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common python-pip
+pip install -U pip
+# pip install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+echo "alias dc='docker-compose'" >> /etc/profile
+. /etc/profile
+curl -fsSL https://get.docker.com -o get-docker.sh && sh ./get-docker.sh
+
+adduser --disabled-password --gecos "" {$UNAME}
+mkdir /home/{$UNAME}/.ssh
+cat << EOF > /home/{$UNAME}/.ssh/config
+Host *
+    StrictHostKeyChecking no
+Host 10.10.*
+     IdentityFile ~/.ssh/yourPrivateKey
+     User yourUserName
+EOF
+cat << EOF >> /home/{$UNAME}/.ssh/authorized_keys
+{$USER_PUB_KEY}
+EOF
+chown -R {$UNAME}.{$UNAME} /home/{$UNAME}/.ssh
+chmod 600 /home/{$UNAME}/.ssh/*
+chmod 700 /home/{$UNAME}/.ssh
+
+usermod -aG devops {$UNAME}
+usermod -aG docker {$UNAME}
+```
