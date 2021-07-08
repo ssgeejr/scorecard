@@ -113,7 +113,7 @@ groupadd devops
 
 
 apt-get update
-apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common python-pip
+apt-get install -y apt-transport-https ca-certificates git curl lvm2 software-properties-common python-pip
 pip install -U pip
 # pip install docker-compose
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -140,7 +140,10 @@ chmod 700 /home/{$UNAME}/.ssh
 
 usermod -aG devops {$UNAME}
 usermod -aG docker {$UNAME}
-```
+
+
+
+
 pvcreate /dev/xvdb 
 vgcreate appvg /dev/xvdb
 lvcreate --name lv01 -l 100%FREE appvg
@@ -151,3 +154,4 @@ echo "/dev/appvg/lv01 /opt/apps ext4 defaults 0 0" >> /etc/fstab
 
 chgrp -R devops /opt
 chmod -R 775 /opt
+```
