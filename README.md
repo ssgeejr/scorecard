@@ -127,9 +127,9 @@ mkdir /home/{$UNAME}/.ssh
 cat << EOF > /home/{$UNAME}/.ssh/config
 Host *
     StrictHostKeyChecking no
-Host 10.10.*
-     IdentityFile ~/.ssh/yourPrivateKey
-     User yourUserName
+Host github.com
+     Hostname github.com
+     IdentityFile ~/.ssh/${SSH_GITHUB_KEY}
 EOF
 cat << EOF >> /home/{$UNAME}/.ssh/authorized_keys
 {$USER_PUB_KEY}
