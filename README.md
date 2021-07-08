@@ -5,6 +5,10 @@ Setup the environment
 
 `pip install mysql-connector-python`
 
+Update Docker to the latest version 
+
+`curl -fsSL https://get.docker.com -o get-docker.sh && ./get-docker.sh`
+
 PHASE I (Complete)
 Extract the file, place it in the corrosponding folder, state the database using docker with the command `docker-compose up -d`
 
