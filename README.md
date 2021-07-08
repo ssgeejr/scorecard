@@ -141,3 +141,13 @@ chmod 700 /home/{$UNAME}/.ssh
 usermod -aG devops {$UNAME}
 usermod -aG docker {$UNAME}
 ```
+pvcreate /dev/xvdb 
+vgcreate appvg /dev/xvdb
+lvcreate --name lv01 -l 100%FREE appvg
+mkfs.ext4 /dev/appvg/lv01
+mkdir /opt/apps
+mount /dev/appvg/lv01 /opt/apps
+echo "/dev/appvg/lv01 /opt/apps ext4 defaults 0 0" >> /etc/fstab
+
+chgrp -R devops /opt
+chmod -R 775 /opt
