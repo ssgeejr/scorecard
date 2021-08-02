@@ -5,6 +5,10 @@ Setup the environment
 
 `pip install mysql-connector-python`
 
+Update Docker to the latest version 
+
+`curl -fsSL https://get.docker.com -o get-docker.sh && ./get-docker.sh`
+
 PHASE I (Complete)
 Extract the file, place it in the corrosponding folder, state the database using docker with the command `docker-compose up -d`
 
@@ -98,4 +102,56 @@ order by
 b.riskid, cnt desc 
 ```
 
+CONFIGURATION 
 
+```#!/bin/bash
+
+UNAME=""
+
+echo "%devops ALL=(ALL) NOPASSWD: LOG_INPUT: ALL"  > /etc/sudoers.d/wmmc-devops
+groupadd devops
+
+
+apt-get update
+apt-get install -y apt-transport-https ca-certificates git curl lvm2 software-properties-common python-pip python3-pip
+pip install -U pip
+# pip install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+echo "alias dc='docker-compose'" >> /etc/profile
+. /etc/profile
+curl -fsSL https://get.docker.com -o get-docker.sh && sh ./get-docker.sh
+
+adduser --disabled-password --gecos "" {$UNAME}
+mkdir /home/{$UNAME}/.ssh
+cat << EOF > /home/{$UNAME}/.ssh/config
+Host *
+    StrictHostKeyChecking no
+Host github.com
+     Hostname github.com
+     IdentityFile ~/.ssh/${SSH_GITHUB_KEY}
+EOF
+cat << EOF >> /home/{$UNAME}/.ssh/authorized_keys
+{$USER_PUB_KEY}
+EOF
+chown -R {$UNAME}.{$UNAME} /home/{$UNAME}/.ssh
+chmod 600 /home/{$UNAME}/.ssh/*
+chmod 700 /home/{$UNAME}/.ssh
+
+usermod -aG devops {$UNAME}
+usermod -aG docker {$UNAME}
+
+
+
+
+pvcreate /dev/xvdb 
+vgcreate appvg /dev/xvdb
+lvcreate --name lv01 -l 100%FREE appvg
+mkfs.ext4 /dev/appvg/lv01
+mkdir /opt/apps
+mount /dev/appvg/lv01 /opt/apps
+echo "/dev/appvg/lv01 /opt/apps ext4 defaults 0 0" >> /etc/fstab
+
+chgrp -R devops /opt
+chmod -R 775 /opt
+```
