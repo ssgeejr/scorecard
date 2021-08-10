@@ -5,6 +5,7 @@ import mysql.connector
 from mysql.connector import connect, Error
 from pathlib import Path
 
+dtval = '0721'
 
 def main():
     try:
@@ -26,14 +27,17 @@ def main():
                           " group by riskid"
                           " order by riskid asc")
         print(fetchRiskCount)
-        dtval = '0721'
+
 
         mycursor.execute(fetchRiskCount)
         results = mycursor.fetchall()
+        monthlyData = "insert ignore into scorecard(dtkey,riskid,total) values (%s, %s, %s)"
         for row in results:
             print("RiskID: %s, Count: %s" % (row[0], row[1]))
             riskCount[row[0]] = row[1]
-
+            dataset = (dtval, row[0], row[1])
+            mycursor.execute(monthlyData, dataset)
+        cnx.commit()
         print(riskCount)
 
         for rid, rcnt in riskCount.items():
@@ -53,16 +57,20 @@ def main():
             key = 0
             currentotal = 0
             print('*************************************************************')
+            riskTopData = "insert ignore into carddata(dtkey,riskid,pluginid,total,pct) values (%s, %s, %s, %s, %s)"
             for row in results:
-                percent = (row[0] / rcnt) * 100
-                currentotal += row[0]
-                print("RiskID %s, Risk Total %s, Total: %s , Pct: %s, Plugin-ID: %s, Vulnerability: %s " % (
-                rid, rcnt, row[0], round(percent), row[1], row[2]))
-
                 key += 1
-                if key == 10:
-                    break;
+                percent = round(((row[0] / rcnt) * 100))
+                currentotal += row[0]
+                print("RiskID %s, Risk Total %s, Total: %s , Pct: %s, Plugin-ID: %s, Vulnerability: %s " % (rid, rcnt, row[0], percent, row[1], row[2]))
 
+                topDataVal = (dtval, rid, row[1], row[0], percent)
+                mycursor.execute(riskTopData, topDataVal)
+
+                if key == 10:
+                    break
+
+            cnx.commit()
             print(currentotal)
             percent = (currentotal / rcnt) * 100
             print('Total Pct for Top 10: %s' % (round(percent)))
