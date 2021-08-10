@@ -155,3 +155,6 @@ echo "/dev/appvg/lv01 /opt/apps ext4 defaults 0 0" >> /etc/fstab
 chgrp -R devops /opt
 chmod -R 775 /opt
 ```
+
+Calculating the Score Card
+
