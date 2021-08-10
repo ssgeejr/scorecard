@@ -57,17 +57,16 @@ def main():
             ")")
         print(fetchClosedByRisk)
         xxx = ('0','1','2','3')
-        for row in xxx:
-            output = (fetchClosedByRisk % (adate, row[0], xdate, row[0]))
-            print(output)
+        for zz in xxx:
+            closedByRisk = (fetchClosedByRisk % (adate, zz[0], xdate, zz[0]))
 
-
-
-
-        exit(0)
-
-
-
+            print(closedByRisk)
+            # dataset = (adate, zz[0], xdate, zz[0])
+            # mycursor.execute(fetchClosedByRisk, dataset)
+            mycursor.execute(closedByRisk)
+            results = mycursor.fetchall()
+            for row in results:
+                print('CLOSED %s >> %s' % (zz[0], row[0]))
 
 #TODO
 # CALCULATE OLD/NEW
@@ -104,7 +103,7 @@ def main():
 #     riskid = X
 # )
 
-
+        exit(0)
 
         mycursor.execute(fetchRiskCount)
         results = mycursor.fetchall()
