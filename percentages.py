@@ -3,9 +3,18 @@
 import csv, time, sys, getopt, glob, os, datetime
 import mysql.connector
 from mysql.connector import connect, Error
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 dtval = '0721'
+
+
+
+def getLastMonth(month):
+    my_date = datetime.strptime(month, "%m%y")
+    last_month = my_date - timedelta(1)
+    # return str(last_month.strftime('%m%y'))
+    return ((my_date.strftime('%b').lower()) + my_date.strftime("%y"), (last_month.strftime('%b').lower()) + last_month.strftime("%y"))
 
 def main():
     try:
@@ -27,6 +36,74 @@ def main():
                           " group by riskid"
                           " order by riskid asc")
         print(fetchRiskCount)
+
+        adate,xdate = getLastMonth(dtval)
+        print('This Month %s && Last Month %s' % (adate, xdate))
+
+        fetchClosedByRisk = ("select"
+            " count(*)"
+            " from"
+            " %s"
+            " where"
+            " riskid = %s"
+            " and"
+            " datakey not in ("
+            " select"
+            " datakey"
+            " from"
+            " %s"
+            " where"
+            " riskid = %s"
+            ")")
+        print(fetchClosedByRisk)
+        xxx = ('0','1','2','3')
+        for row in xxx:
+            output = (fetchClosedByRisk % (adate, row[0], xdate, row[0]))
+            print(output)
+
+
+
+
+        exit(0)
+
+
+
+
+#TODO
+# CALCULATE OLD/NEW
+## NEW ITEMS
+# select
+#         count(*)
+#     from
+#     jul21
+# where
+# riskid = X
+# and
+# datakey not in (
+#     select
+#     datakey
+#     from
+#     jun21
+#     where
+#     riskid = X
+# )
+## CLOSED ITEMS
+# select
+#     count(*)
+# from
+#     jun21
+# where
+# riskid = X
+# and
+# datakey not in (
+#     select
+#     datakey
+#     from
+#     jul21
+#     where
+#     riskid = X
+# )
+
 
 
         mycursor.execute(fetchRiskCount)
