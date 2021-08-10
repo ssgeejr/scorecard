@@ -40,7 +40,7 @@ def main():
         adate,xdate = getLastMonth(dtval)
         print('This Month %s && Last Month %s' % (adate, xdate))
 
-        fetchClosedByRisk = ("select"
+        fetchMonthlyChanges = ("select"
             " count(*)"
             " from"
             " %s"
@@ -55,77 +55,48 @@ def main():
             " where"
             " riskid = %s"
             ")")
-        print(fetchClosedByRisk)
-        xxx = ('0','1','2','3')
-        for zz in xxx:
-            closedByRisk = (fetchClosedByRisk % (adate, zz[0], xdate, zz[0]))
 
-            print(closedByRisk)
-            # dataset = (adate, zz[0], xdate, zz[0])
-            # mycursor.execute(fetchClosedByRisk, dataset)
-            mycursor.execute(closedByRisk)
-            results = mycursor.fetchall()
-            for row in results:
-                print('CLOSED %s >> %s' % (zz[0], row[0]))
-
-#TODO
-# CALCULATE OLD/NEW
-## NEW ITEMS
-# select
-#         count(*)
-#     from
-#     jul21
-# where
-# riskid = X
-# and
-# datakey not in (
-#     select
-#     datakey
-#     from
-#     jun21
-#     where
-#     riskid = X
-# )
-## CLOSED ITEMS
-# select
-#     count(*)
-# from
-#     jun21
-# where
-# riskid = X
-# and
-# datakey not in (
-#     select
-#     datakey
-#     from
-#     jul21
-#     where
-#     riskid = X
-# )
-
-        exit(0)
+        print(fetchMonthlyChanges)
+        # riskidkey = ('0','1','2','3')
 
         mycursor.execute(fetchRiskCount)
         results = mycursor.fetchall()
-        monthlyData = "insert ignore into scorecard(dtkey,riskid,total) values (%s, %s, %s)"
+        monthlyData = "insert ignore into scorecard(dtkey,riskid,total,new, closed) values (%s, %s, %s, %s, %s)"
+        riskCount = {}
         for row in results:
-            print("RiskID: %s, Count: %s" % (row[0], row[1]))
+            z_riskid = row[0]
+            z_total = row[1]
+            z_new = 0
+            z_closed = 0
             riskCount[row[0]] = row[1]
-            dataset = (dtval, row[0], row[1])
-            mycursor.execute(monthlyData, dataset)
+            print("RiskID: %s, Count: %s" % (row[0], row[1]))
+            changeQuery = (fetchMonthlyChanges % (adate, row[0], xdate, row[0]))
+            mycursor.execute(changeQuery)
+            results = mycursor.fetchall()
+            for new in results:
+                print('NEW %s >> %s' % (row[0], new[0]))
+                z_new = new[0]
+            changeQuery = (fetchMonthlyChanges % (xdate, row[0], adate, row[0]))
+            mycursor.execute(changeQuery)
+            results = mycursor.fetchall()
+            for closed in results:
+                print('CLOSED %s >> %s' % (row[0], closed[0]))
+                z_closed = closed[0]
+
+            datavalues = (dtval, z_riskid, z_total, z_new, z_closed)
+            mycursor.execute(monthlyData, datavalues)
         cnx.commit()
-        print(riskCount)
 
         for rid, rcnt in riskCount.items():
             fetchTop10 = ("select count(*), a.pluginid, b.vulname from"
-                          " jul21 a, plugin b"
+                          " %s a, plugin b"
                           " where"
                           " a.riskid = %s"
                           " and a.pluginid = b.pluginid"
                           " group by"
                           " a.pluginid"
                           " order by"
-                          " count(*) desc" % (rid))
+                          " count(*) desc" % (adate, rid))
             print(fetchTop10)
 
             mycursor.execute(fetchTop10)

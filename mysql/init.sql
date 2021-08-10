@@ -15,7 +15,9 @@ CREATE TABLE _rawdata (
 create table scorecard ( 
 	dtkey varchar(8) not null, 
 	riskid int not null, 
-	total int not null 
+	total int not null,
+	new int not null,
+	closed int not null
 );
 
 CREATE TABLE carddata (

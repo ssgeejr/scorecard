@@ -1,5 +1,5 @@
 select 
-	riskid, total
+	*
 from 
 	scorecard
 where 
