@@ -4,7 +4,7 @@ Import Data and Calcuate monthly scorecard
 Setup the environment
 
 `pip install mysql-connector-python`
-
+ pip install mysql-connector-python
 Update Docker to the latest version 
 
 `curl -fsSL https://get.docker.com -o get-docker.sh && ./get-docker.sh`
@@ -22,6 +22,26 @@ Once you have connect, you should be able to run the queries you need to extract
 PHASE II (in progress)
 This will include a dockerized version of tomcat which will run the UI 
 
+
+create table scorecard ( 
+dtkey varchar(8) not null, 
+riskid int not null, 
+total int not null 
+)
+
+CREATE TABLE carddata (
+  dtkey varchar(8) NOT NULL,
+  riskid int NOT NULL,
+  pluginid varchar(8) NOT NULL,
+  total int NOT NULL DEFAULT 0,
+  pct int NOT NULL DEFAULT 0
+)
+
+select * from scorecard
+order by dtkey desc, riskid
+
+select * from carddata
+order by dtkey desc, riskid, total desc
 
 QUERIES
 ``` select
@@ -157,4 +177,19 @@ chmod -R 775 /opt
 ```
 
 Calculating the Score Card
+
+Select total counts for all four types:
+Critical, High, Medium & Low
+
+Select top 10 by count for each
+
+Calculate percentage for each one, insert into DB 
+
+2981
+
+[566,565,422,81,57,43,43,43,42,42]
+
+
+
+
 
