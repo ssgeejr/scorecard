@@ -1,8 +1,12 @@
-<a href='<%@page import="java.sql.*, javax.sql.*, javax.naming.*"%>'></a>
-
+<%@page import="java.sql.*, javax.sql.*, javax.naming.*, java.util.*"%>
+<%@page import="com.north.scorecard.tethysui.*" %>
 <%
 	boolean fault = false;
 	String ymval = "";
+	TopTenList ttl = null;
+	ArrayList<TopTenItem> items = null;
+	TopTenItem item = null;
+	
 	try{
 	    String month = request.getParameter("month").trim();
 	    String year = request.getParameter("year").trim();
@@ -13,33 +17,19 @@
 //		out.println(ex.toString());
 	}
 	//out.println("FAULT: " + fault + "<br>");
-
-
-if(!fault){
-
-
-    DataSource ds = null;
-    Connection conn = null;
-    ResultSet result = null;
-    Statement stmt = null;
-    try{
-        Context ctx = new InitialContext();
-        ds = (DataSource)ctx.lookup("java:comp/env/jdbc/tethys");
-        if (ds != null) {
-            conn = ds.getConnection();
-            Statement statement = conn.createStatement();
-            String sql = "select riskid, total from scorecard where dtkey = '0721' order by riskid";
-            ResultSet rs = statement.executeQuery(sql);
-            while(rs.next()){
-                out.println("RISKID: " + rs.getInt("riskid") + " TOTAL: " + rs.getInt("total") + "<br>");
-            }
-        }else{
-            out.println("DATASOURCE WAS NULL...");
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
+	try{
+	DataEngine de = new DataEngine();
+	ttl = de.fetchTopTenDataResults("0721");
+	items = ttl.getCritcalList();
+	System.out.println("ITEMS_SIZE: " + items.size());
+	System.out.println("TTLSIZE: " + (ttl == null));
+	fault = true;
+	}catch(Exception ex){
+		System.err.println("******************************************************");
+		 ex.printStackTrace();
+		 out.println("<hr> ERRRORRRRRRR </hr><br>");
+		 out.println(ex.getMessage());
+	}
 
 %>
 
@@ -67,6 +57,21 @@ if(!fault){
 }
 .auto-style5 {
 	text-align: left;
+}
+.st_c {
+	width: 50px; text-align: center;
+}
+.st_p {
+	width: 50px; text-align: center;
+}
+.st_i {
+	width: 125px; text-align: center;
+}
+.st_n {
+	text-align: left;
+}
+.st_sh{
+	background-color: #0000FF; color: #FFFFFF
 }
 </style>
 </head>
@@ -106,83 +111,120 @@ if(!fault){
 		<td>
 				<table style="width: 600pt">
 			<tr>
-				<td bgcolor="#0000FF" class="auto-style4">CRITICAL</td>
+				<td class="st_sh">CRITICAL</td>
 			</tr>
 			<tr>
 				<td>
 				<table class="auto-style3" style="width: 100%">
 					<tr bgcolor="#008080">
-						<td style="width: 75px"><strong>Count</strong></td>
-						<td style="width: 75px"><strong>%</strong></td>
-						<td style="width: 75px"><strong>Plugin-ID</strong></td>
-						<td style="width: *" class="auto-style5"><strong>&nbsp;Vulnerability</strong></td>
+						<td class="st_c"><strong>Count</strong></td>
+						<td class="st_p"><strong>%</strong></td>
+						<td class="st_i"><strong>Plugin-ID</strong></td>
+						<td class="st_n"><strong>&nbsp;Vulnerability</strong></td>
 					</tr>
+					
+					<% 
+						items = ttl.getCritcalList();
+					    item = items.get(0);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(1);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(2);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(3);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(4);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(5);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+						<% 
+					    item = items.get(6);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(7);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(8);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(9);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
+
 				</table>
 				</td>
 			</tr>
@@ -192,267 +234,378 @@ if(!fault){
 	</tr>
 	<tr>
 		<td>
-		<table style="width: 600pt">
+				<table style="width: 600pt">
 			<tr>
-				<td bgcolor="#0000FF" class="auto-style4">HIGH</td>
+				<td class="st_sh">HIGH</td>
 			</tr>
 			<tr>
 				<td>
 				<table class="auto-style3" style="width: 100%">
 					<tr bgcolor="#008080">
-						<td style="width: 75px"><strong>Count</strong></td>
-						<td style="width: 75px"><strong>%</strong></td>
-						<td style="width: 75px"><strong>Plugin-ID</strong></td>
-						<td style="width: *" class="auto-style5"><strong>&nbsp;Vulnerability</strong></td>
+						<td class="st_c"><strong>Count</strong></td>
+						<td class="st_p"><strong>%</strong></td>
+						<td class="st_i"><strong>Plugin-ID</strong></td>
+						<td class="st_n"><strong>&nbsp;Vulnerability</strong></td>
 					</tr>
+					
+					<% 
+						items = ttl.getHighList();
+					    item = items.get(0);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(1);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(2);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(3);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(4);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(5);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+						<% 
+					    item = items.get(6);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(7);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(8);
+					%>
+					
 					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
+					<% 
+					    item = items.get(9);
+					%>
+					
 					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
 					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-				</table>
-				</td>
-			</tr>
-		</table>
-</td>
-	</tr>
-	<tr>
-		<td>		<div align="center">
-		<table style="width: 600pt">
-			<tr>
-				<td bgcolor="#0000FF" class="auto-style4">MEDIUM</td>
-			</tr>
-			<tr>
-				<td>
-				<table class="auto-style3" style="width: 100%">
-					<tr bgcolor="#008080">
-						<td style="width: 75px"><strong>Count</strong></td>
-						<td style="width: 75px"><strong>%</strong></td>
-						<td style="width: 75px"><strong>Plugin-ID</strong></td>
-						<td style="width: *" class="auto-style5"><strong>&nbsp;Vulnerability</strong></td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-				</table>
-				</td>
-			</tr>
-		</table>
-		</div>
-</td>
-	</tr>
-	<tr>
-		<td >
-		<div align="center">
-		<table style="width: 600pt">
-			<tr>
-				<td bgcolor="#0000FF" class="auto-style4">LOW</td>
-			</tr>
-			<tr>
-				<td>
-				<table class="auto-style3" style="width: 100%">
-					<tr bgcolor="#008080">
-						<td style="width: 75px"><strong>Count</strong></td>
-						<td style="width: 75px"><strong>%</strong></td>
-						<td style="width: 75px"><strong>Plugin-ID</strong></td>
-						<td style="width: *" class="auto-style5"><strong>&nbsp;Vulnerability</strong></td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
-					<tr bgcolor="#FFFFCC">
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td style="width: 75px">&nbsp;</td>
-						<td>&nbsp;</td>
-					</tr>
+
 				</table>
 				</td>
 			</tr>
 		</table>
 
-</td>
+		</td>
+	</tr>
+	<tr>
+		<td>
+				<table style="width: 600pt">
+			<tr>
+				<td class="st_sh">MEDIUM</td>
+			</tr>
+			<tr>
+				<td>
+				<table class="auto-style3" style="width: 100%">
+					<tr bgcolor="#008080">
+						<td class="st_c"><strong>Count</strong></td>
+						<td class="st_p"><strong>%</strong></td>
+						<td class="st_i"><strong>Plugin-ID</strong></td>
+						<td class="st_n"><strong>&nbsp;Vulnerability</strong></td>
+					</tr>
+					
+					<% 
+						items = ttl.getMediumList();
+					    item = items.get(0);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(1);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(2);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(3);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(4);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(5);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+						<% 
+					    item = items.get(6);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(7);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(8);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(9);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+
+				</table>
+				</td>
+			</tr>
+		</table>
+
+		</td>
+	</tr>
+	<tr>
+		<td>
+				<table style="width: 600pt">
+			<tr>
+				<td class="st_sh">LOW</td>
+			</tr>
+			<tr>
+				<td>
+				<table class="auto-style3" style="width: 100%">
+					<tr bgcolor="#008080">
+						<td class="st_c"><strong>Count</strong></td>
+						<td class="st_p"><strong>%</strong></td>
+						<td class="st_i"><strong>Plugin-ID</strong></td>
+						<td class="st_n"><strong>&nbsp;Vulnerability</strong></td>
+					</tr>
+					
+					<% 
+						items = ttl.getLowList();
+					    item = items.get(0);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(1);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(2);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(3);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(4);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(5);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+						<% 
+					    item = items.get(6);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(7);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(8);
+					%>
+					
+					<tr bgcolor="#FFFFCC">
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+					<% 
+					    item = items.get(9);
+					%>
+					
+					<tr>
+						<td class="st_c">&nbsp; <%= item.getCount() %></td>
+						<td class="st_p">&nbsp; <%= item.getPct() %>%</td>
+						<td class="st_i">&nbsp; <%= item.getPluginid() %></td>
+						<td class="st_n">&nbsp;<%= item.getName() %></td>
+					</tr>
+
+				</table>
+				</td>
+			</tr>
+		</table>
+
+		</td>
 	</tr>
 	<tr>
 		<td>&nbsp;</td>
