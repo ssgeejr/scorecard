@@ -1,4 +1,48 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<a href='<%@page import="java.sql.*, javax.sql.*, javax.naming.*"%>'></a>
+
+<%
+	boolean fault = false
+	try{
+	    String month = request.getParameter("month").trim();
+	    String year = request.getParameter("year").trim();
+		out.println("DTKEY: " + month + "/" + year  + "<br>");
+	}catch(Exception ex){
+		fault = true;
+		err.println(ex.toString());
+	}
+	out.println("FAULT: " + fault + "<br>");
+
+
+if( 1 == 0){
+
+
+    DataSource ds = null;
+    Connection conn = null;
+    ResultSet result = null;
+    Statement stmt = null;
+    try{
+        Context ctx = new InitialContext();
+        ds = (DataSource)ctx.lookup("java:comp/env/jdbc/tethys");
+        if (ds != null) {
+            conn = ds.getConnection();
+            Statement statement = conn.createStatement();
+            String sql = "select riskid, total from scorecard where dtkey = '0721' order by riskid";
+            ResultSet rs = statement.executeQuery(sql);
+            while(rs.next()){
+                out.println("RISKID: " + rs.getInt("riskid") + " TOTAL: " + rs.getInt("total") + "<br>");
+            }
+        }else{
+            out.println("DATASOURCE WAS NULL...");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+%>
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
@@ -26,14 +70,16 @@
 </head>
 
 <body>
-<form action="top10.jsp">
-<table style="width: 100%">
+<form action="index.jsp" method="post">
+<div align="center" >
+
+<table style="width: 600pt">
 	<tr>
-		<td class="auto-style1"><strong>Top 10 Issues by Risk for  
-		[MONTH]</strong></td>
+		<td class="auto-style1"><strong>Top 10 Issues by Risk<br />
+		<%= dtkey %></strong></td>
 	</tr>
 	<tr>
-		<td class="auto-style2"><select name="Select2">
+		<td class="auto-style2"><select name="month" id="month">
 		<option selected="selected" value="01">Jan</option>
 		<option value="02">Feb</option>
 		<option value="03">Mar</option>
@@ -46,19 +92,19 @@
 		<option value="10">Oct</option>
 		<option value="11">Nov</option>
 		<option value="12">Dec</option>
-		</select><select name="Select1">
+		</select><select  name="year" id="year">
 		<option selected="selected" value="21">2021</option>
 		<option value="22">2022</option>
 		<option value="23">2023</option>
 		</select>
-		<img height="21" src="s.png" width="20" /></td>
+		<input type="image" src="s.png" border="0" alt="Submit" />
+		</td>
 	</tr>
 	<tr>
 		<td>
-		<div align="center">
-		<table style="width: 600pt">
+				<table style="width: 600pt">
 			<tr>
-				<td bgcolor="#0000FF" class="auto-style4"><strong>CRITICAL</strong></td>
+				<td bgcolor="#0000FF" class="auto-style4">CRITICAL</td>
 			</tr>
 			<tr>
 				<td>
@@ -139,11 +185,11 @@
 				</td>
 			</tr>
 		</table>
-		</div>
+
 		</td>
 	</tr>
 	<tr>
-		<td>		<div align="center">
+		<td>
 		<table style="width: 600pt">
 			<tr>
 				<td bgcolor="#0000FF" class="auto-style4">HIGH</td>
@@ -227,7 +273,6 @@
 				</td>
 			</tr>
 		</table>
-		</div>
 </td>
 	</tr>
 	<tr>
@@ -404,7 +449,7 @@
 				</td>
 			</tr>
 		</table>
-		</div>
+
 </td>
 	</tr>
 	<tr>
@@ -417,6 +462,7 @@
 		<td>&nbsp;</td>
 	</tr>
 </table>
+</div>
 </form>
 </body>
 
