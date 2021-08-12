@@ -11,6 +11,6 @@
             username="scorecard"
             password="scorecard"
             driverClassName="com.mysql.jdbc.Driver"
-            url="jdbc:mysql://tethys:3306/scorecard"
+            url="jdbc:mysql://tethysdb:3306/scorecard"
 	/>
 </Context>

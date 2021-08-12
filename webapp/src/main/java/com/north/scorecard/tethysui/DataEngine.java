@@ -29,9 +29,17 @@ public class DataEngine {
 	public TopTenList fetchTopTenDataResults(String dt) throws Exception{
 		TopTenList ttl = new TopTenList();
 		try {
-		conn = DriverManager.getConnection("jdbc:mysql://tethys/scorecard","scorecard","scorecard");
-		System.out.println("Connection IsClosed: " + conn.isClosed());
 			
+			Context ctx = new InitialContext();
+			DataSource ds = (DataSource)ctx.lookup("java:comp/env/jdbc/tethys");
+			if (ds == null) {
+			 conn = DriverManager.getConnection("jdbc:mysql://tethysdb/scorecard","scorecard","scorecard");
+			}else {
+				System.out.println("CONTEXT CONNECTION SUCCESSFULLY LOADED ... ");
+				conn = ds.getConnection();
+			}
+			System.out.println("Connection IsClosed: " + conn.isClosed());
+		
 			String query = "select" 
 			+" a.pluginid as pid,"
 			+" a.riskid as rid,"
