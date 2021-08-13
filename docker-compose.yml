@@ -3,7 +3,7 @@ services:
     tethysdb:
         image: mysql:8.0.25
         container_name: tethysdb
-        tty: true
+#        tty: true
         restart: always
         environment:
             MYSQL_DATABASE: 'scorecard'
@@ -17,12 +17,12 @@ services:
             - /opt/apps/tethysdb:/var/lib/mysql
         ports:
             - 3306:3306
-#    tethysui:
-#        image: tethysui
-#        container_name: tethysui
+    tethysui:
+        image: tethysui
+        container_name: tethysui
 #        tty: true
-#        ports:
-#            - 80:8080
-#        restart: always
-#        depends_on:
-#            - scorecarddb
+        ports:
+            - 80:8080
+        restart: always
+        depends_on:
+            - tethysdb
