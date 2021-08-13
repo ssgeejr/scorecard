@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Context>
+	<Resource
+            name="jdbc/tethys"
+            auth="Container"
+            type="javax.sql.DataSource"
+            maxActive="50"
+            maxIdle="30"
+            maxWait="10000"
+            username="scorecard"
+            password="scorecard"
+            driverClassName="com.mysql.jdbc.Driver"
+            url="jdbc:mysql://tethysdb:3306/scorecard"
+	/>
+</Context>
