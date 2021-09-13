@@ -4,79 +4,9 @@
 <head>
 <meta content="en-us" http-equiv="Content-Language" />
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-<title>Monthly Security Scorecard</title>
+<title>Security Scorecard</title>
+<link rel="stylesheet" href="tethys.css"/>
 <style type="text/css">
-.month-header {
-	color: #FFFFFF;
-	text-align: center;
-	width: 65px;
-
-}
-.auto-style3 {
-	border-width: 0px;
-	margin-right: 0px;
-}
-.auto-style5 {
-	color: #FFFFFF;
-	text-align: center;
-}
-.auto-style6 {
-	text-align: center;
-	color: #FFFFFF;
-	font-size: large;
-	border-left-style: solid;
-	border-left-width: 1px;
-	border-right-style: solid;
-	border-right-width: 1px;
-	border-top-style: solid;
-	border-top-width: 1px;
-}
-.auto-style7 {
-	border-style: solid;
-	border-width: 1px;
-}
-.auto-style8 {
-	border-left-width: 0px;
-	border-right-width: 0px;
-	border-bottom-width: 0px;
-}
-.auto-style10 {
-	text-align: center;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-}
-.auto-style11 {
-	text-align: center;
-	border-top-style: solid;
-	border-top-width: 1px;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-}
-.auto-style12 {
-	border-left-style: solid;
-	border-left-width: 1px;
-	border-right-style: solid;
-	border-right-width: 1px;
-}
-.auto-style13 {
-	border-left-style: solid;
-	border-left-width: 1px;
-	border-right-style: solid;
-	border-right-width: 1px;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-}
-.auto-style15 {
-	text-align: center;
-}
-.value-header{
-	text-align: left;
-	width: 65px;
-}
-.value-column{
-	text-align: center;
-	width: 65px;
-}
 
 </style>
 </head>
@@ -94,7 +24,7 @@
 		<td class="auto-style12">
 		<table style="width: 100%" class="auto-style8">
 			<tr>
-				<td class="auto-style10" bgcolor="#66CCFF">Cumulative</td>
+				<td class="auto-style10" ><strong>Cumulative</strong></td>
 			</tr>
 			<tr>
 				<td class="auto-style7">
@@ -163,7 +93,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="auto-style11" bgcolor="#66CCFF">Critical</td>
+				<td class="auto-style11" bgcolor="#66CCFF"><strong>Critical</strong></td>
 			</tr>
 			<tr>
 				<td class="auto-style7">
@@ -217,7 +147,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="auto-style11" bgcolor="#66CCFF">High</td>
+				<td class="auto-style11" bgcolor="#66CCFF"><strong>High</strong></td>
 			</tr>
 			<tr>
 				<td class="auto-style7">
@@ -271,7 +201,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="auto-style11" bgcolor="#66CCFF">Medium</td>
+				<td class="auto-style11" bgcolor="#66CCFF"><strong>Medium</strong></td>
 			</tr>
 			<tr>
 				<td class="auto-style7">
@@ -325,7 +255,7 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="auto-style11" bgcolor="#66CCFF" >Low</td>
+				<td class="auto-style11" bgcolor="#66CCFF" ><strong>Low</strong></td>
 			</tr>
 			<tr>
 				<td class="auto-style7">
