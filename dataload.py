@@ -98,23 +98,28 @@ def loadRawData(datafile):
 
            xref = "insert ignore into plugin (pluginid,vulname,risk,riskid) values(%s,%s,%s,%s)"
            count = 0
+           loaded_records = 0
            for lines in csvFile:
                if count > 0:
                    datakey = lines[0]+lines[4] 
-                   record = (datakey,lines[0],lines[4],fetchrefid(lines[3]),dtkey,dt)
-                   vulname = lines[7]
-                   xrecord = (lines[0],vulname[:64],lines[3],fetchrefid(lines[3]))
+                   refid = fetchrefid(lines[3])
+                   if refid > -1: 
+                      record = (datakey,lines[0],lines[4],refid, dtkey,dt)
+                      vulname = lines[7]
+                      xrecord = (lines[0],vulname[:64],lines[3],refid)
            #        print(record)
                    #print(lines[0] + ' ' + lines[4] + ' ' + dt)
-                   mycursor.execute(sql, record)
-                   mycursor.execute(xref, xrecord)
+                      mycursor.execute(sql, record)
+                      mycursor.execute(xref, xrecord)
+                      loaded_records+=1
                    #if count > 10: return
-                   if (count % 1000) == 0:
-                       cnx.commit()
-                       print("commiting another 1000 records: " , count)
+                      if (loaded_records % 1000) == 0:
+                          cnx.commit()
+                          print("commiting another 1000 records: " , loaded_records)
                count+=1
-
-           print("Total records loaded: " , count)
+           cnx.commit()
+           print("Total records scanned: " , count)
+           print("Total records loaded: " , loaded_records)
        except Error as e:
            print('Error at line: ', count)
            print('******** INPUT LINE **********')

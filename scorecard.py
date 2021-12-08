@@ -6,7 +6,7 @@ from mysql.connector import connect, Error
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
-dtval = '0721'
+dtval = '0921'
 
 def main():
     try:
