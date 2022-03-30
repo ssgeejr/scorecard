@@ -34,7 +34,7 @@ def fetchFileStack():
     global dtkey
     global userDefinedKey
     #   working_dir = "/opt/apps/sc.data"
-    working_dir = "C:/dev/wmmc/tethys_data"
+    working_dir = "/opt/apps/sc.data"
     os.chdir(working_dir)
     for file in glob.glob("*.csv"):
         print('***** LOADING DATA FILE ', file, ' *****')
@@ -98,16 +98,18 @@ def testRawData(datafile):
             12: 'Plugin Output'
             """
 
+            logfile = open("/tmp/output.sample.log", "w") 
             data = {}
+            cvecnt = 0
             for lines in csvFile:
 
                 if count > 0:
                     datakey = lines[0] + lines[4]
-                    refid = fetchRiskID(lines[3])
-                    if refid > -1:
-                        record = (datakey, lines[0], lines[4], refid, dtkey, dt)
+                    riskid = fetchRiskID(lines[3])
+                    if riskid > -1:
+                        record = (datakey, lines[0], lines[4], riskid, dtkey, dt)
                         vulname = lines[7]
-                        xrecord = (lines[0], vulname[:64], lines[3], refid)
+                        xrecord = (lines[0], vulname[:64], lines[3], riskid)
 
                         #                        print(lines)
 
@@ -116,34 +118,43 @@ def testRawData(datafile):
                         #print("***************************************")
                         #print(data[11])
                         #print("***************************************")
+                        #if data[1] == 'CVE-2021-34456':
+                        if data[0] == '156617':
 
-                        print('Plugin ID', data[0]
-                              + '\n_________________________________________________'
-                              + '\nCVE', data[1]
-                              + '\n_________________________________________________'
-                              + '\nCVSS', data[2]
-                              + '\n_________________________________________________'
-                              + '\nRisk', data[3]
-                              + '\n_________________________________________________'
-                              + '\nHost', data[4]
-                              + '\n_________________________________________________'
-                              + '\nProtocol', data[5]
-                              + '\n_________________________________________________'
-                              + '\nPort', data[6]
-                              + '\n_________________________________________________'
-                              + '\nName', data[7]
-                              + '\n_________________________________________________'
-                              + '\nSynopsis', data[8]
-                              + '\n_________________________________________________'
-                              + '\nDescription', data[9]
-                              + '\n_________________________________________________'
-                              + '\nSolution', data[10]
-                              + '\n_________________________________________________'
-                              + '\nSee Also', data[11]
-                              + '\n_________________________________________________'
-                              + '\nPlugin Output', data[12])
-                        print('******************************************************')
-                        print('******************************************************')
+                           logmsg = ("\n*************************************************"
+                              +"\nPlugin ID: " + data[0]
+                              +"\n_________________________________________________"
+                              +"\nCVE: " + data[1]
+                              +"\n_________________________________________________"
+                              +"\nCVSS: " + data[2]
+                              +"\n_________________________________________________"
+                              +"\nRisk: " + data[3]
+                              +"\n_________________________________________________"
+                              +"\nHost: " + data[4]
+                              +"\n_________________________________________________"
+                              +"\nProtocol: " + data[5]
+                              +"\n_________________________________________________"
+                              +"\nPort: " + data[6]
+                              +"\n_________________________________________________"
+                              +"\nName: " + data[7]
+                              +"\n_________________________________________________"
+                              +"\nSynopsis: " + data[8]
+                              +"\n_________________________________________________"
+                              +"\nDescription: " + data[9]
+                              +"\n_________________________________________________"
+                              +"\nSolution: " + data[10]
+                              +"\n_________________________________________________"
+                              +"\nSee Also: " + data[11]
+                              +"\n_________________________________________________"
+                              +"\nPlugin Output: " + data[12])
+
+                           #print(logmsg)
+                           logfile.write(logmsg)
+                           #print('******************************************************')
+                           #print('******************************************************')
+                           cvecnt += 1
+                           print('***************** cvecnt[', cvecnt, '] ******************')
+                           if cvecnt > 10: break
 
                         # print(lines[0] + ' ' + lines[4] + ' ' + dt)
                         loaded_records += 1
@@ -167,6 +178,8 @@ def testRawData(datafile):
                           + '\nPlugin Output', lines[12])
                 """
                 count += 1
+            print('>>>>>>>>>>>>CLOSING LOG FILE<<<<<<<<<<<<<<<<<')
+            logfile.close()
             print("Total records scanned: ", count)
             print("Total records loaded: ", loaded_records)
         except Error as e:
