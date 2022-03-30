@@ -1,5 +1,5 @@
 select 
-	*
+	dtkey, riskid, total, new, closed
 from 
 	scorecard
 where 

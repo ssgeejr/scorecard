@@ -1,5 +1,35 @@
 # scorecard
-Import Data and Calcuate monthly scorecard
+Import Data and Calculate monthly scorecard
+
+
+VERSION 2.0:
+```
+  CREATE TABLE 'plugin' (
+  'pluginid' varchar(8) NOT NULL,
+  'vulname' varchar(64) NOT NULL,
+  'risk' varchar(12) NOT NULL,
+  'riskid' int NOT NULL,
+  'synopsis' TEXT NOT NULL DEFAULT '',
+  'description' TEXT NOT NULL DEFAULT '',
+  'solution' TEXT NOT NULL DEFAULT '',
+  'seealso' TEXT NOT NULL DEFAULT '', PRIMARY KEY ('pluginid')
+  );
+  
+  
+  
+  CREATE TABLE 'scorecard' (
+    'datakey' varchar(50) NOT NULL,
+    'pluginid' varchar(8) NOT NULL,
+    'host' varchar(32) NOT NULL,
+    'riskid' int NOT NULL,
+    'dtkey' varchar(8) NOT NULL,
+    'rptdate' date NOT NULL,
+    'response' TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY ('datakey')
+  );
+```
+
+
 
 Setup the environment
 

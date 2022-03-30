@@ -9,7 +9,7 @@ from pathlib import Path
 dtkey = time.strftime('%m%y')
 userDefinedKey = False
 
-def fetchrefid(risk):
+def fetchRiskID(risk):
     result = -99;
     if risk == 'Critical': result = 0
     elif risk == 'High': result = 1
@@ -102,7 +102,7 @@ def loadRawData(datafile):
            for lines in csvFile:
                if count > 0:
                    datakey = lines[0]+lines[4] 
-                   refid = fetchrefid(lines[3])
+                   refid = fetchRiskID(lines[3])
                    if refid > -1: 
                       record = (datakey,lines[0],lines[4],refid, dtkey,dt)
                       vulname = lines[7]

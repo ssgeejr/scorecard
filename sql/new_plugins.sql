@@ -1,19 +1,20 @@
-select 
-	a.*,
-    b.vulname
+select
+    count(*) as total_new 
+#	a.*,
+#    b.vulname
 from 
-	jul21 a,
+	sep21 a,
     plugin b
 where 
-	a. riskid = 1
+	a. riskid = 0
     and a.pluginid = b.pluginid
-	and vulname like '%Adobe%'
-    and a. pluginid not in
+#	and lower(vulname) like '%Adobe%'
+    and a.pluginid not in
         (
 		select 
 			pluginid
 		from
-			jun21
+			jul21
 		where 
-			riskid = 1
+			riskid = 0
 		)
