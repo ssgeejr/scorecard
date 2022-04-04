@@ -6,6 +6,7 @@ from mysql.connector import connect, Error
 from pathlib import Path
 
 dtkey = time.strftime('%m%y')
+dolog = False
 userDefinedKey = False
 
 
@@ -24,17 +25,18 @@ def fetchRiskID(risk):
     return result
 
 
-def fetchTableName(key):
-    tablename = datetime.date(1900, int(key[:2]), 1).strftime('%b').lower() + key[2:]
-    print(tablename)
-    return tablename
+def validateData(a_list, key):
+    try:
+        return a_list[key]
+    except IndexError:
+        return ''
 
 
 def fetchFileStack():
     global dtkey
     global userDefinedKey
     #   working_dir = "/opt/apps/sc.data"
-    working_dir = "/opt/apps/sc.data"
+    working_dir = "C:/dev/wmmc/tethys_data"
     os.chdir(working_dir)
     for file in glob.glob("*.csv"):
         print('***** LOADING DATA FILE ', file, ' *****')
@@ -71,14 +73,36 @@ def testRawData(datafile):
         # return
         # displaying the contents of the CSV file
         try:
+            cnx = mysql.connector.connect(user='telco',
+                                          password='telco',
+                                          host='europa',
+                                          database='telco')
+            print(cnx)
+            mycursor = cnx.cursor()
 
             print('>>DTKEY: ', dtkey)
-            tablename = fetchTableName(dtkey)
 
-            sql = "insert ignore into " + tablename + "(datakey,pluginid,host,riskid,dtkey,rptdate) values (%s, %s, %s, %s, %s, %s)"
+            sql = ("insert into scorecard"
+              +" (datakey,"
+              +" dtkey,"
+              +" rptdate,"
+              +" pluginid,"
+              +" cve,"
+              +" cvss,"
+              +" riskid,"
+              +" host,"
+              +" protocol,"
+              +" port,"
+              +" name,"
+              +" synopsis,"
+              +" description,"
+              +" solution,"
+              +" see_also,"
+              +" plugin_output)"
+              +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+
+
             print(sql)
-
-            xref = "insert ignore into plugin (pluginid,vulname,risk,riskid) values(%s,%s,%s,%s)"
             count = 0
             loaded_records = 0
 
@@ -98,63 +122,101 @@ def testRawData(datafile):
             12: 'Plugin Output'
             """
 
-            logfile = open("/tmp/output.sample.log", "w") 
+#            if dolog: logfile = open("/tmp/output.sample.log", "w")
             data = {}
             cvecnt = 0
             for lines in csvFile:
-
+                datakey = lines[0] + lines[4]
                 if count > 0:
                     datakey = lines[0] + lines[4]
                     riskid = fetchRiskID(lines[3])
                     if riskid > -1:
-                        record = (datakey, lines[0], lines[4], riskid, dtkey, dt)
-                        vulname = lines[7]
-                        xrecord = (lines[0], vulname[:64], lines[3], riskid)
 
-                        #                        print(lines)
+                        print("*************************************************");
+                        print("datakey: " + datakey);
+                        print("_________________________________________________");
+                        print("dtkey: " + dtkey);
+                        print("_________________________________________________");
+                        print("dt: " + dt);
+                        print("_________________________________________________");
+                        print("[0]Plugin ID: " + lines[0]);
+                        print("_________________________________________________");
+                        print("[1]CVE: " + validateData(lines, 1));
+                        print("_________________________________________________");
+                        print("[2]CVSS: " + validateData(lines, 2));
+                        print("_________________________________________________");
+                        print("[3]Risk: " + lines[3]);
+                        print("_________________________________________________");
+                        print("[4]Host: " + lines[4]);
+                        print("_________________________________________________");
+                        print("[5]Protocol: " + validateData(lines, 5));
+                        print("_________________________________________________");
+                        print("[6]Port: " + validateData(lines, 6));
+                        print("_________________________________________________");
+                        print("[7]Name: " + validateData(lines, 7));
+                        print("_________________________________________________");
+                        print("[8]Synopsis: " + validateData(lines, 8));
+                        print("_________________________________________________");
+                        print("[9]Description: " + validateData(lines, 9));
+                        print("_________________________________________________");
+                        print("[10]Solution: " + validateData(lines, 10));
+                        print("_________________________________________________");
+                        print("[11]See Also: " + validateData(lines, 11));
+                        print("_________________________________________________");
+                        print("[12]Plugin Output: " + validateData(lines, 12));
 
-                        for x in range(13):
-                            data[x] = fetchIndex(lines, x)
-                        #print("***************************************")
-                        #print(data[11])
-                        #print("***************************************")
-                        #if data[1] == 'CVE-2021-34456':
-                        if data[0] == '156617':
+
+
+                        values = (
+                            datakey, dtkey, dt, lines[0], validateData(lines, 1), validateData(lines, 2),
+                            riskid, lines[4], validateData(lines, 5),
+                            validateData(lines, 6),
+                            validateData(lines, 7), validateData(lines, 8), validateData(lines, 9),
+                            validateData(lines, 10), validateData(lines, 11), validateData(lines, 12)
+                        )
+
+                        print(sql % values)
+                        mycursor.execute(sql,values)
+                        cnx.commit()
+
+                        """
+                        if len(data) > 0:
 
                            logmsg = ("\n*************************************************"
-                              +"\nPlugin ID: " + data[0]
+                              +"\nPlugin ID: " + lines[0]
                               +"\n_________________________________________________"
-                              +"\nCVE: " + data[1]
+                              +"\nCVE: " + lines[1]
                               +"\n_________________________________________________"
-                              +"\nCVSS: " + data[2]
+                              +"\nCVSS: " + lines[2]
                               +"\n_________________________________________________"
-                              +"\nRisk: " + data[3]
+                              +"\nRisk: " + lines[3]
                               +"\n_________________________________________________"
-                              +"\nHost: " + data[4]
+                              +"\nHost: " + lines[4]
                               +"\n_________________________________________________"
-                              +"\nProtocol: " + data[5]
+                              +"\nProtocol: " + lines[5]
                               +"\n_________________________________________________"
-                              +"\nPort: " + data[6]
+                              +"\nPort: " + lines[6]
                               +"\n_________________________________________________"
-                              +"\nName: " + data[7]
+                              +"\nName: " + lines[7]
                               +"\n_________________________________________________"
-                              +"\nSynopsis: " + data[8]
+                              +"\nSynopsis: " + lines[8]
                               +"\n_________________________________________________"
-                              +"\nDescription: " + data[9]
+                              +"\nDescription: " + lines[9]
                               +"\n_________________________________________________"
-                              +"\nSolution: " + data[10]
+                              +"\nSolution: " + lines[10]
                               +"\n_________________________________________________"
-                              +"\nSee Also: " + data[11]
+                              +"\nSee Also: " + lines[11]
                               +"\n_________________________________________________"
-                              +"\nPlugin Output: " + data[12])
+                              +"\nPlugin Output: " + lines[12])
 
-                           #print(logmsg)
-                           logfile.write(logmsg)
+                           print(logmsg)
+#                           if dolog: logfile.write(logmsg)
                            #print('******************************************************')
                            #print('******************************************************')
                            cvecnt += 1
                            print('***************** cvecnt[', cvecnt, '] ******************')
                            if cvecnt > 10: break
+                        """
 
                         # print(lines[0] + ' ' + lines[4] + ' ' + dt)
                         loaded_records += 1
@@ -179,7 +241,7 @@ def testRawData(datafile):
                 """
                 count += 1
             print('>>>>>>>>>>>>CLOSING LOG FILE<<<<<<<<<<<<<<<<<')
-            logfile.close()
+#            if dolog: logfile.close()
             print("Total records scanned: ", count)
             print("Total records loaded: ", loaded_records)
         except Error as e:
@@ -190,9 +252,12 @@ def testRawData(datafile):
             print(e)
 
 
+
+
 def main(argv):
     global dtkey
     global userDefinedKey
+    global dolog
     try:
         opts, args = getopt.getopt(argv, "hp:", ["pkey="])
     except getopt.GetoptError:
@@ -202,6 +267,8 @@ def main(argv):
         if opt == '-h':
             print('dataloade.py -p <date>')
             sys.exit()
+        elif opt in ("-l", "--log"):
+            dolog = True
         elif opt in ("-p", "--pkey"):
             userDefinedKey = True
             dtkey = arg
