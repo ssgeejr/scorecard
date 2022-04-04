@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import csv, time, sys, getopt, glob, os, datetime
-import mysql.connector
+import mysql.connector, configparser
 from mysql.connector import connect, Error
 from pathlib import Path
 
@@ -73,10 +73,19 @@ def testRawData(datafile):
         # return
         # displaying the contents of the CSV file
         try:
-            cnx = mysql.connector.connect(user='telco',
-                                          password='telco',
-                                          host='europa',
-                                          database='telco')
+            config = configparser.ConfigParser()
+            #config.read('db.ini')
+
+            config.read(os.path.join(os.path.dirname(__file__),'db.ini'))
+
+            cnx = mysql.connector.connect(user=config['tethys']['user'],
+                                          password=config['tethys']['passwd'],
+                                          host=config['tethys']['host'],
+                                          database=config['tethys']['db'],
+                                          autocommit=config['tethys']['commit'])
+
+#            cnx.autocommit = True
+
             print(cnx)
             mycursor = cnx.cursor()
 
@@ -131,7 +140,7 @@ def testRawData(datafile):
                     datakey = lines[0] + lines[4]
                     riskid = fetchRiskID(lines[3])
                     if riskid > -1:
-
+                        '''
                         print("*************************************************");
                         print("datakey: " + datakey);
                         print("_________________________________________________");
@@ -164,7 +173,7 @@ def testRawData(datafile):
                         print("[11]See Also: " + validateData(lines, 11));
                         print("_________________________________________________");
                         print("[12]Plugin Output: " + validateData(lines, 12));
-
+                        '''
 
 
                         values = (
@@ -177,7 +186,7 @@ def testRawData(datafile):
 
                         print(sql % values)
                         mycursor.execute(sql,values)
-                        cnx.commit()
+
 
                         """
                         if len(data) > 0:
@@ -223,6 +232,7 @@ def testRawData(datafile):
                         # if count > 10: return
                         if (loaded_records % 1000) == 0:
                             print("commiting another 1000 records: ", loaded_records)
+                            cnx.commit()
                 """
                 else:
                     print('Plugin ID', lines[0]
