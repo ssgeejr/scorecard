@@ -9,6 +9,8 @@ dtkey = time.strftime('%m%y')
 userDefinedKey = False
 configFile = 'db.ini'
 working_dir = "/opt/apps/sc.data"
+config = configparser.ConfigParser()
+cdir=os.path.dirname(os.path.abspath(__file__))
 
 def fetchRiskID(risk):
     result = -99;
@@ -58,6 +60,7 @@ def fetchFileStack():
 
 def loadScoredataData(datafile):
     global dtkey
+    global cdir
 
     dt = time.strftime('%Y%m%d')
 
@@ -70,9 +73,13 @@ def loadScoredataData(datafile):
         # return
         # displaying the contents of the CSV file
         try:
-            config = configparser.ConfigParser()
-            print('USING CONFIG FILE: ', configFile)
-            config.read(os.path.join(os.path.dirname(__file__), configFile))
+            
+            print('**********************************************************')
+            print('Configuration File: ', configFile)
+            config_source = os.path.join(cdir, configFile)
+            print('Configuration Source: ', config_source)
+            config.read(config_source)
+            print('**********************************************************')
 
             cnx = mysql.connector.connect(user=config['tethys']['user'],
                                           password=config['tethys']['passwd'],
