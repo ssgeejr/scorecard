@@ -52,7 +52,7 @@ def fetchFileStack():
 
         print('New File: ', new_file)
         print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-#      os.rename(old_file, new_file)
+        os.rename(old_file, new_file)
 
 
 def loadScoredataData(datafile):
