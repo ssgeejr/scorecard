@@ -55,7 +55,7 @@ def fetchFileStack():
 
         print('New File: ', new_file)
         print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
- #       os.rename(old_file, new_file)
+        os.rename(old_file, new_file)
 
 
 def loadScoredataData(datafile):
@@ -199,7 +199,7 @@ def loadScoredataData(datafile):
         except Error as e:
             print('Error at line: ', count)
             print(e)
-            
+
 def main(argv):
     global dtkey
     global userDefinedKey
