@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import csv, time, sys, getopt, glob, os, datetime
-import mysql.connector, configparser
+import mysql.connector, configparser, hashlib
 from mysql.connector import connect, Error
 from pathlib import Path
 
@@ -55,7 +55,7 @@ def fetchFileStack():
 
         print('New File: ', new_file)
         print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-        os.rename(old_file, new_file)
+ #       os.rename(old_file, new_file)
 
 
 def loadScoredataData(datafile):
@@ -107,8 +107,9 @@ def loadScoredataData(datafile):
               +" description,"
               +" solution,"
               +" see_also,"
-              +" plugin_output)"
-              +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
+              +" plugin_output,"
+              +" hash)"
+              +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
             print(sql)
 
@@ -169,12 +170,16 @@ def loadScoredataData(datafile):
                         print("_________________________________________________");
                         print("[12]Plugin Output: " + validateData(lines, 12));
                         '''
+                        #md5sum = (lines[0] + "" + lines[4])
+                        #print(md5sum)
+                        #print(hashlib.md5((lines[0] + "" + lines[4]).encode()).hexdigest())
 
                         values = (
                             dtkey, dt, lines[0], validateData(lines, 1), validateData(lines, 2),
                             riskid, lines[4], validateData(lines, 5), validateData(lines, 6),
                             validateData(lines, 7), validateData(lines, 8), validateData(lines, 9),
-                            validateData(lines, 10), validateData(lines, 11), validateData(lines, 12)
+                            validateData(lines, 10), validateData(lines, 11), validateData(lines, 12),
+                            hashlib.md5((lines[0] + "" + lines[4]).encode()).hexdigest()
                         )
 
 #                        print(sql % values)
@@ -194,10 +199,7 @@ def loadScoredataData(datafile):
         except Error as e:
             print('Error at line: ', count)
             print(e)
-
-
-
-
+            
 def main(argv):
     global dtkey
     global userDefinedKey

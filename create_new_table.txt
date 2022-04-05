@@ -15,7 +15,7 @@ CREATE TABLE `scorecard` (
   `host` varchar(32) NOT NULL,
   `riskid` int NOT NULL,
   `dtkey` varchar(8) NOT NULL,
-  `rptdate` date NOT NULL,
+  `rptdate` date NOT NULL
   PRIMARY KEY (`datakey`)
 ) 
 
@@ -43,6 +43,7 @@ CREATE TABLE `scorecard` (
   `solution` TEXT NULL,
   `see_also` TEXT NULL,
   `plugin_output`   TEXT NULL,
+  `hash` varchar(32) NOT NULL,
   PRIMARY KEY (`scorecardid`)
 );
 
