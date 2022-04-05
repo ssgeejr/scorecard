@@ -84,10 +84,8 @@ def loadScoredataData(datafile):
             cnx = mysql.connector.connect(user=config['tethys']['user'],
                                           password=config['tethys']['passwd'],
                                           host=config['tethys']['host'],
-                                          database=config['tethys']['db'],
-                                          autocommit=config['tethys']['commit'])
-
-#            cnx.autocommit = True
+                                          database=config['tethys']['db'])
+            cnx.autocommit = True
 
             print(cnx)
             mycursor = cnx.cursor()
