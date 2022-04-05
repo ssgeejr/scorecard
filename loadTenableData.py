@@ -8,6 +8,7 @@ from pathlib import Path
 dtkey = time.strftime('%m%y')
 userDefinedKey = False
 configFile = 'db.ini'
+working_dir = "/opt/apps/sc.data"
 
 def fetchRiskID(risk):
     result = -99;
@@ -34,8 +35,8 @@ def validateData(a_list, key):
 def fetchFileStack():
     global dtkey
     global userDefinedKey
-    #   working_dir = "/opt/apps/sc.data"
-    working_dir = "C:/dev/wmmc/tethys_data"
+    global working_dir
+
     os.chdir(working_dir)
     for file in glob.glob("*.csv"):
         print('***** LOADING DATA FILE ', file, ' *****')
@@ -194,16 +195,19 @@ def main(argv):
     global dtkey
     global userDefinedKey
     global configFile
+    global working_dir
     try:
-        opts, args = getopt.getopt(argv, "h:c:p")
-    except getopt.GetoptError:
-        print('dataloader.py -h \nHelp Message')
-        print('dataloader.py -p <date>')
-        print('dataloader.py -cconfig.ini')
+        opts, args = getopt.getopt(argv, "h:c:p:w:")
+    except getopt.GetoptError as e:
+        print('>>>> ERROR: %s' % str(e))
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('dataloade.py -p <date>')
+            print('dataloader.py -h \nHelp Message')
+            print('dataloader.py -p <date>')
+            print('dataloader.py -c{config.file}')
+            print('dataloader.py -p date')
+            print('dataloader.py -w{working.dir}')
             sys.exit()
         elif opt in "-c":
             configFile = arg
@@ -211,6 +215,10 @@ def main(argv):
         elif opt in ("-p", "--pkey"):
             userDefinedKey = True
             dtkey = arg
+        elif opt in "-w":
+            working_dir = arg
+            print(working_dir)
+
     fetchFileStack()
 
 
