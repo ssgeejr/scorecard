@@ -70,8 +70,6 @@ def loadScoredataData(datafile):
         # displaying the contents of the CSV file
         try:
             config = configparser.ConfigParser()
-            #config.read('db.ini')
-
             print('USING CONFIG FILE: ', configFile)
             config.read(os.path.join(os.path.dirname(__file__), configFile))
 
@@ -164,7 +162,6 @@ def loadScoredataData(datafile):
                         print("[12]Plugin Output: " + validateData(lines, 12));
                         '''
 
-
                         values = (
                             dtkey, dt, lines[0], validateData(lines, 1), validateData(lines, 2),
                             riskid, lines[4], validateData(lines, 5), validateData(lines, 6),
@@ -172,7 +169,7 @@ def loadScoredataData(datafile):
                             validateData(lines, 10), validateData(lines, 11), validateData(lines, 12)
                         )
 
-                        print(sql % values)
+#                        print(sql % values)
                         mycursor.execute(sql, values)
 
                         # print(lines[0] + ' ' + lines[4] + ' ' + dt)
