@@ -28,7 +28,6 @@ Error Code: 1064. You have an error in your SQL syntax; check the manual that co
 
 CREATE TABLE `scorecard` (
   `scorecardid` INT NOT NULL AUTO_INCREMENT,
-  `datakey` varchar(46) NOT NULL,
   `pluginid` varchar(8) NOT NULL,
   `host` varchar(32) NOT NULL,
   `riskid` int NOT NULL,
@@ -48,8 +47,7 @@ CREATE TABLE `scorecard` (
 );
 
 "insert into scorecard"
-+" (datakey,"
-+" pluginid,"
++" (pluginid,"
 +" host,"
 +" riskid,"
 +" dtkey,"

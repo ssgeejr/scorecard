@@ -6,9 +6,8 @@ from mysql.connector import connect, Error
 from pathlib import Path
 
 dtkey = time.strftime('%m%y')
-dolog = False
 userDefinedKey = False
-
+configFile = 'db.ini'
 
 def fetchRiskID(risk):
     result = -99;
@@ -49,17 +48,14 @@ def fetchFileStack():
         else:
             dtkey = Path(old_file).stem
 
-        testRawData(old_file)
-        #      loadRawData(old_file)
+        loadScoredataData(old_file)
 
         print('New File: ', new_file)
         print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-
-
 #      os.rename(old_file, new_file)
 
 
-def testRawData(datafile):
+def loadScoredataData(datafile):
     global dtkey
 
     dt = time.strftime('%Y%m%d')
@@ -68,7 +64,7 @@ def testRawData(datafile):
 
         # reading the CSV file
         csvFile = csv.reader(file)
-
+        count = 0
         print('USING DTKEY: ', dtkey)
         # return
         # displaying the contents of the CSV file
@@ -76,7 +72,8 @@ def testRawData(datafile):
             config = configparser.ConfigParser()
             #config.read('db.ini')
 
-            config.read(os.path.join(os.path.dirname(__file__),'db.ini'))
+            print('USING CONFIG FILE: ', configFile)
+            config.read(os.path.join(os.path.dirname(__file__), configFile))
 
             cnx = mysql.connector.connect(user=config['tethys']['user'],
                                           password=config['tethys']['passwd'],
@@ -89,11 +86,8 @@ def testRawData(datafile):
             print(cnx)
             mycursor = cnx.cursor()
 
-            print('>>DTKEY: ', dtkey)
-
             sql = ("insert into scorecard"
-              +" (datakey,"
-              +" dtkey,"
+              +" (dtkey,"
               +" rptdate,"
               +" pluginid,"
               +" cve,"
@@ -108,11 +102,10 @@ def testRawData(datafile):
               +" solution,"
               +" see_also,"
               +" plugin_output)"
-              +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
-
+              +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
             print(sql)
-            count = 0
+
             loaded_records = 0
 
             """
@@ -131,11 +124,7 @@ def testRawData(datafile):
             12: 'Plugin Output'
             """
 
-#            if dolog: logfile = open("/tmp/output.sample.log", "w")
-            data = {}
-            cvecnt = 0
             for lines in csvFile:
-                datakey = lines[0] + lines[4]
                 if count > 0:
                     datakey = lines[0] + lines[4]
                     riskid = fetchRiskID(lines[3])
@@ -177,55 +166,14 @@ def testRawData(datafile):
 
 
                         values = (
-                            datakey, dtkey, dt, lines[0], validateData(lines, 1), validateData(lines, 2),
-                            riskid, lines[4], validateData(lines, 5),
-                            validateData(lines, 6),
+                            dtkey, dt, lines[0], validateData(lines, 1), validateData(lines, 2),
+                            riskid, lines[4], validateData(lines, 5), validateData(lines, 6),
                             validateData(lines, 7), validateData(lines, 8), validateData(lines, 9),
                             validateData(lines, 10), validateData(lines, 11), validateData(lines, 12)
                         )
 
                         print(sql % values)
-                        mycursor.execute(sql,values)
-
-
-                        """
-                        if len(data) > 0:
-
-                           logmsg = ("\n*************************************************"
-                              +"\nPlugin ID: " + lines[0]
-                              +"\n_________________________________________________"
-                              +"\nCVE: " + lines[1]
-                              +"\n_________________________________________________"
-                              +"\nCVSS: " + lines[2]
-                              +"\n_________________________________________________"
-                              +"\nRisk: " + lines[3]
-                              +"\n_________________________________________________"
-                              +"\nHost: " + lines[4]
-                              +"\n_________________________________________________"
-                              +"\nProtocol: " + lines[5]
-                              +"\n_________________________________________________"
-                              +"\nPort: " + lines[6]
-                              +"\n_________________________________________________"
-                              +"\nName: " + lines[7]
-                              +"\n_________________________________________________"
-                              +"\nSynopsis: " + lines[8]
-                              +"\n_________________________________________________"
-                              +"\nDescription: " + lines[9]
-                              +"\n_________________________________________________"
-                              +"\nSolution: " + lines[10]
-                              +"\n_________________________________________________"
-                              +"\nSee Also: " + lines[11]
-                              +"\n_________________________________________________"
-                              +"\nPlugin Output: " + lines[12])
-
-                           print(logmsg)
-#                           if dolog: logfile.write(logmsg)
-                           #print('******************************************************')
-                           #print('******************************************************')
-                           cvecnt += 1
-                           print('***************** cvecnt[', cvecnt, '] ******************')
-                           if cvecnt > 10: break
-                        """
+                        mycursor.execute(sql, values)
 
                         # print(lines[0] + ' ' + lines[4] + ' ' + dt)
                         loaded_records += 1
@@ -233,32 +181,13 @@ def testRawData(datafile):
                         if (loaded_records % 1000) == 0:
                             print("commiting another 1000 records: ", loaded_records)
                             cnx.commit()
-                """
-                else:
-                    print('Plugin ID', lines[0]
-                          + '\nCVE', lines[1]
-                          + '\nCVSS', lines[2]
-                          + '\nRisk', lines[3]
-                          + '\nHost', lines[4]
-                          + '\nProtocol', lines[5]
-                          + '\nPort', lines[6]
-                          + '\nName', lines[7]
-                          + '\nSynopsis', lines[8]
-                          + '\nDescription', lines[9]
-                          + '\nSolution', lines[10]
-                          + '\nSee Also', lines[11]
-                          + '\nPlugin Output', lines[12])
-                """
                 count += 1
-            print('>>>>>>>>>>>>CLOSING LOG FILE<<<<<<<<<<<<<<<<<')
-#            if dolog: logfile.close()
+
+            cnx.commit()
             print("Total records scanned: ", count)
             print("Total records loaded: ", loaded_records)
         except Error as e:
             print('Error at line: ', count)
-            print('******** INPUT LINE **********')
-            print(lines)
-            print('******************************')
             print(e)
 
 
@@ -267,18 +196,21 @@ def testRawData(datafile):
 def main(argv):
     global dtkey
     global userDefinedKey
-    global dolog
+    global configFile
     try:
-        opts, args = getopt.getopt(argv, "hp:", ["pkey="])
+        opts, args = getopt.getopt(argv, "h:c:p")
     except getopt.GetoptError:
+        print('dataloader.py -h \nHelp Message')
         print('dataloader.py -p <date>')
+        print('dataloader.py -cconfig.ini')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print('dataloade.py -p <date>')
             sys.exit()
-        elif opt in ("-l", "--log"):
-            dolog = True
+        elif opt in "-c":
+            configFile = arg
+            print(configFile)
         elif opt in ("-p", "--pkey"):
             userDefinedKey = True
             dtkey = arg
