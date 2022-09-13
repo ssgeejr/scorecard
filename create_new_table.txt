@@ -1,29 +1,31 @@
-CVE-1999-0519
 
-CVE-2021-34494
+CREATE TABLE scorecardstats (
+	stats_pk INT NOT NULL AUTO_INCREMENT,
+	stats_id INT NOT NULL,
+	dtkey varchar(5) NOT NULL,
+	month_id INT NOT NULL,
+	total INT NOT NULL,
+	critical INT NOT NULL,
+	high INT NOT NULL,
+	medium INT NOT NULL,
+	low INT NOT NULL,
+	total_new INT NOT NULL,
+	critical_new INT NOT NULL,
+	high_new INT NOT NULL,
+	medium_new INT NOT NULL,
+	low_new INT NOT NULL,
+	total_closed INT NOT NULL,
+	critical_closed INT NOT NULL,
+	high_closed INT NOT NULL,
+	medium_closed INT NOT NULL,
+	low_closed INT NOT NULL,
+	PRIMARY KEY (stats_pk)
+);
 
-CVE-2021-34498
-CVE-2021-34457
-CVE-2021-34456
+CREATE INDEX indx_stats ON scorecardstats(dtkey);
 
 
-
-CREATE TABLE `scorecard` (
-  `scorecardid` 
-  `datakey` varchar(46) NOT NULL,
-  `pluginid` varchar(8) NOT NULL,
-  `host` varchar(32) NOT NULL,
-  `riskid` int NOT NULL,
-  `dtkey` varchar(8) NOT NULL,
-  `rptdate` date NOT NULL
-  PRIMARY KEY (`datakey`)
-) 
-
-FLOAT(7,4) column, the approximate result is 999.0001
-
-
-Error Code: 1064. You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ``scorecard` (   `scorecardid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,   `datake` at line 1
-
+#-------------------------------------------------------
 
 
 CREATE TABLE `scorecard` (
@@ -64,53 +66,3 @@ CREATE TABLE `scorecard` (
 +" see_also,"
 +" plugin_output)"
 +" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-
-
-
-CREATE TABLE `mar22` (
-  `datakey` varchar(46) NOT NULL,
-  `pluginid` varchar(8) NOT NULL,
-  `host` varchar(32) NOT NULL,
-  `riskid` int NOT NULL,
-  `dtkey` varchar(8) NOT NULL,
-  `rptdate` date NOT NULL,
-  PRIMARY KEY (`datakey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
-Plugin ID 151611
-_________________________________________________
-CVE CVE-2021-34494
-_________________________________________________
-CVSS 9.3
-_________________________________________________
-Risk High
-_________________________________________________
-Host wmmcambtrackpc3.inhouse.wmmc
-_________________________________________________
-Protocol tcp
-_________________________________________________
-Port 445
-_________________________________________________
-Name KB5004307: Windows 7 and Windows Server 2008 R2 Security Update (July 2021)
-_________________________________________________
-Synopsis The remote Windows host is affected by multiple vulnerabilities.
-_________________________________________________
-Description The remote Windows host is missing security update 5004307. It is, therefore, affected by multiple vulnerabilities.
-_________________________________________________
-Solution Apply Security Update 5004307
-_________________________________________________
-See Also
-_________________________________________________
-Plugin Output
-The remote host is missing one of the following rollup KBs :
-  - 5004307
-  - 5004289
-
-C:\Windows\system32\ntoskrnl.exe has not been patched.
-    Remote version : 6.1.7601.24545
-    Should be      : 6.1.7601.25661
-
-
-******************************************************
-******************************************************
