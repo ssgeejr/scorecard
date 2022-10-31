@@ -1,0 +1,68 @@
+
+CREATE TABLE scorecardstats (
+	stats_pk INT NOT NULL AUTO_INCREMENT,
+	stats_id INT NOT NULL,
+	dtkey varchar(5) NOT NULL,
+	month_id INT NOT NULL,
+	total INT NOT NULL,
+	critical INT NOT NULL,
+	high INT NOT NULL,
+	medium INT NOT NULL,
+	low INT NOT NULL,
+	total_new INT NOT NULL,
+	critical_new INT NOT NULL,
+	high_new INT NOT NULL,
+	medium_new INT NOT NULL,
+	low_new INT NOT NULL,
+	total_closed INT NOT NULL,
+	critical_closed INT NOT NULL,
+	high_closed INT NOT NULL,
+	medium_closed INT NOT NULL,
+	low_closed INT NOT NULL,
+	PRIMARY KEY (stats_pk)
+);
+
+CREATE INDEX indx_stats ON scorecardstats(dtkey);
+
+
+#-------------------------------------------------------
+
+
+CREATE TABLE `scorecard` (
+  `scorecardid` INT NOT NULL AUTO_INCREMENT,
+  `pluginid` varchar(8) NOT NULL,
+  `host` varchar(32) NOT NULL,
+  `riskid` int NOT NULL,
+  `dtkey` varchar(8) NOT NULL,
+  `rptdate` date NOT NULL,
+  `cve` TEXT NULL,
+  `cvss` TEXT NULL,
+  `protocol` VARCHAR(6) NULL,
+  `port` int NULL,
+  `name`  TEXT NULL,
+  `synopsis` TEXT NULL,
+  `description` TEXT NULL,
+  `solution` TEXT NULL,
+  `see_also` TEXT NULL,
+  `plugin_output`   TEXT NULL,
+  `hash` varchar(32) NOT NULL,
+  PRIMARY KEY (`scorecardid`)
+);
+
+"insert into scorecard"
++" (pluginid,"
++" host,"
++" riskid,"
++" dtkey,"
++" rptdate,"
++" cve,"
++" cvss,"
++" protocol,"
++" port,"
++" name,"
++" synopsis,"
++" description,"
++" solution,"
++" see_also,"
++" plugin_output)"
++" values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"

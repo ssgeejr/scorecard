@@ -6,7 +6,7 @@ from mysql.connector import connect, Error
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
-dtval = '0721'
+dtval = '1221'
 
 
 
@@ -70,18 +70,28 @@ def main():
             z_closed = 0
             riskCount[row[0]] = row[1]
             print("RiskID: %s, Count: %s" % (row[0], row[1]))
+
             changeQuery = (fetchMonthlyChanges % (adate, row[0], xdate, row[0]))
-            mycursor.execute(changeQuery)
-            results = mycursor.fetchall()
-            for new in results:
-                print('NEW %s >> %s' % (row[0], new[0]))
-                z_new = new[0]
-            changeQuery = (fetchMonthlyChanges % (xdate, row[0], adate, row[0]))
-            mycursor.execute(changeQuery)
-            results = mycursor.fetchall()
-            for closed in results:
-                print('CLOSED %s >> %s' % (row[0], closed[0]))
-                z_closed = closed[0]
+            try:
+                mycursor.execute(changeQuery)
+                results = mycursor.fetchall()
+                for new in results:
+                    print('NEW %s >> %s' % (row[0], new[0]))
+                    z_new = new[0]
+            except Error as e:
+                print(e)
+                z_new = 0
+
+            try:
+                changeQuery = (fetchMonthlyChanges % (xdate, row[0], adate, row[0]))
+                mycursor.execute(changeQuery)
+                results = mycursor.fetchall()
+                for closed in results:
+                    print('CLOSED %s >> %s' % (row[0], closed[0]))
+                    z_closed = closed[0]
+            except Error as e:
+                print(e)
+                z_closed = 0
 
             datavalues = (dtval, z_riskid, z_total, z_new, z_closed)
             mycursor.execute(monthlyData, datavalues)
@@ -118,6 +128,8 @@ def main():
                     break
 
             cnx.commit()
+
+
             print(currentotal)
             percent = (currentotal / rcnt) * 100
             print('Total Pct for Top 10: %s' % (round(percent)))

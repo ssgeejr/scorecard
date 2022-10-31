@@ -1,0 +1,91 @@
+﻿
+
+a:link { color: gray; } 
+a:visited { color: green; } 
+a:hover { color: purple; } 
+a:active { color: teal; }
+
+
+.st_c {
+	width: 50px; text-align: center;
+}
+.st_p {
+	width: 50px; text-align: center;
+}
+.st_i {
+	width: 125px; text-align: center;
+}
+.st_n {
+	text-align: left;
+}
+.st_sh{
+	background-color: #0000FF; color: #FFFFFF
+}
+
+
+.month-header {
+	color: #FFFFFF;
+	text-align: center;
+	width: 65px;
+
+}
+.auto-style3 {
+	border-width: 0px;
+	margin-right: 0px;
+}
+.auto-style6 {
+	text-align: center;
+	color: #FFFFFF;
+	font-size: large;
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-style: solid;
+	border-top-width: 1px;
+}
+.auto-style7 {
+	border-style: solid;
+	border-width: 1px;
+}
+.auto-style8 {
+	border-left-width: 0px;
+	border-right-width: 0px;
+	border-bottom-width: 0px;
+}
+.auto-style10 {
+	text-align: center;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	background-color: #66CCFF;
+}
+.auto-style11 {
+	text-align: center;
+	border-top-style: solid;
+	border-top-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+}
+.auto-style12 {
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-style: solid;
+	border-right-width: 1px;
+}
+.auto-style13 {
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+}
+.value-header{
+	text-align: left;
+	width: 65px;
+}
+.value-column{
+	text-align: center;
+	width: 65px;
+}
+

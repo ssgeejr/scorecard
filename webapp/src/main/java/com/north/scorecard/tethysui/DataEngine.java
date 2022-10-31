@@ -29,9 +29,13 @@ public class DataEngine {
 	public TopTenList fetchTopTenDataResults(String dt) throws Exception{
 		TopTenList ttl = new TopTenList();
 		try {
-			
-			Context ctx = new InitialContext();
-			DataSource ds = (DataSource)ctx.lookup("java:comp/env/jdbc/tethys");
+			DataSource ds = null;
+			try {
+				Context ctx = new InitialContext();
+				ds = (DataSource)ctx.lookup("java:comp/env/jdbc/tethys");
+			}catch(Exception ce) {
+				//do nothing ... if it fails, it's fine 
+			}
 			if (ds == null) {
 			 conn = DriverManager.getConnection("jdbc:mysql://tethysdb/scorecard","scorecard","scorecard");
 			}else {
@@ -55,7 +59,7 @@ public class DataEngine {
 			+" order by" 
 			+" a.riskid, total desc";
 			PreparedStatement psdata = conn.prepareStatement(query);
-			System.out.println(query);
+//			System.out.println(query);
 			
 			psdata.setInt(1, 0);
 			psdata.setString(2, "0721");
