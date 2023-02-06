@@ -29,7 +29,7 @@ VERSION 2.0:
   );
 ```
 
-
+FINDSTR /i /r /c:"log4j*"
 
 Setup the environment
 
