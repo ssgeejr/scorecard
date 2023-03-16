@@ -63,9 +63,11 @@ def loadServerData(serverFile):
                 if count > 0:
                     ip = row[0]
                     name = row[1]
-                    sos = row[2]
+                    sos = row[2].replace('\r\n', ', ').replace('\n', ', ').replace('\r', ', ')
                     if not name:
                         name = ip
+                    if not sos:
+                        sos = 'UNKNOWN'
 #                    print("IP, Name, OS: %s, %s, %s" % (ip, name, sos))
                     values = (dtkey, ip, name, sos)
                     mycursor.execute(sql, values)
