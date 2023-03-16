@@ -1,4 +1,6 @@
-SET @rid = 3;
+SET @rid = 0;
+SET @old = '0922B';
+SET @new = '1022B';
 
 -- EXPLAIN ANALYZE
 
@@ -8,7 +10,7 @@ select
 from
 	scorecard
 where
-	dtkey = '0322B'
+	dtkey = @old
     and riskid = @rid
     and hash not in (
 		select
@@ -16,7 +18,7 @@ where
 		from 
 			scorecard
 		where
-			dtkey = '0422A'
+			dtkey = @new
             and riskid = @rid
 	)
 group by 
