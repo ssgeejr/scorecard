@@ -1,6 +1,5 @@
 import os
 
-
 class Saturn:
     def __init__(self):
         # Get the path to the .openai directory in the user's home directory
@@ -18,7 +17,6 @@ class Saturn:
                 self.company_id = value.strip()
             if key == 'ASSIGN_TO':
                 self.assign_to = value.strip()
-
 
 
     def get_api_key(self):

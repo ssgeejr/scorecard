@@ -1,9 +1,8 @@
 from Saturn import Saturn
 from datetime import datetime, timedelta
-import requests
-import json
-import base64
-
+from mysql.connector import connect, Error
+import requests, time, json, base64, os
+import mysql.connector, configparser
 
 '''
 Days to mitigate (15) and close (30) critical risks
@@ -35,20 +34,41 @@ raw_thirty_days_later = raw_today + timedelta(days=30)
 thirty_days_later = raw_thirty_days_later.strftime('%Y-%m-%d')
 start_date_field_id = "customfield_10015"
 
-def createTop10JiraTickets():
+dtkey = time.strftime('%m%y')
+userDefinedKey = False
+configFile = 'tethys.ini'
+config = configparser.ConfigParser()
+cdir = os.path.dirname(os.path.abspath(__file__))
+
+dateTimeKey = "0423A"
+
+def fetchPriority(risk):
+    result = -99;
+    jiraPriority = 'NULL'
+    ddate = 'NULL'
+    if risk == 0:
+        result = 'Critical'
+        jiraPriority = 'Highest'
+        ddate = fifteen_days_later
+    elif risk == 1:
+        result = 'High'
+        jiraPriority = 'High'
+        ddate = thirty_days_later
+    return result, jiraPriority, ddate
+
+def createTop10JiraTickets(rid, pluginID, title, description):
     #print(api_key)
 
-    fetchSQLData()
+    priority, jiraPriority, due_date = fetchPriority(rid)
 
-
+    assignee_accountId = "603d0d5a5290e700697d72fc"
 
     # Replace these with your own values
     project_key = 'ISS'
     issue_type = 'Task'
-    summary = 'A new task with specific priority, assignee, and start date'
-    description = 'This task has specific priority, assignee, and start date set using the REST API.'
-    priority_name = 'Highest'
-    start_date = '2023-06-01'
+    summary = ('%s %s %s' % (priority, pluginID, title))
+    #description = 'This task has specific priority, assignee, and start date set using the REST API.'
+    labels = [pluginID, priority]
 
     # Set up the request headers
     headers = {
@@ -82,14 +102,14 @@ def createTop10JiraTickets():
                 ]
             },
             'priority': {
-                'name': priority_name
+                'name': jiraPriority
             },
             'assignee': {
                 'accountId': assignee_accountId
             },
+            "labels": labels,
             start_date_field_id: today,
-            "duedate": fifteen_days_later
-
+            "duedate": due_date
         }
     }
 
@@ -103,31 +123,99 @@ def createTop10JiraTickets():
         print(f"Error creating task: {response.status_code} - {response.text}")
 
 
-def fetchSQLData()
+def fetchSQLData():
+    count = 0
+    try:
+        print('**********************************************************')
+        print('Configuration File: ', configFile)
+        config_source = os.path.join(cdir, configFile)
+        print('Configuration Source: ', config_source)
+        config.read(config_source)
+        print('**********************************************************')
 
+        cnx = mysql.connector.connect(user=config['tethys']['user'],
+                                      password=config['tethys']['passwd'],
+                                      host=config['tethys']['host'],
+                                      database=config['tethys']['db'])
+        #            cnx.autocommit = True
+        print(cnx)
 
+        fetchTopVul = ("select count(distinct hash) as total, pluginid, name"
+                        " from scorecard"
+                        " where dtkey = %s and riskid = %s"
+                        " group by name, pluginid"
+                        " order by total"
+                        " desc")
+        fetchDetails = ("select solution, description"
+                        " from scorecard"
+                        " where dtkey = %s and riskid = %s and pluginid = %s"
+                        " limit 1")
+        #values_list = [0, 1]
+        values_list = [0]
+        for rid in values_list:
+            print('********************* start section %s ********************' % (rid))
+            vValues = (dateTimeKey, rid)
+            topCursor = cnx.cursor()
+            topCursor.execute(fetchTopVul, vValues)
+            vulResult = topCursor.fetchall()
+            vCount = 0
+            for vrow in vulResult:
+                vulnerability = ('Count: %s \r\nPluginID: %s\r\nName: %s\r\n' % (vrow[0], vrow[1], vrow[2]))
+                detailCursor = cnx.cursor()
+                values = (dateTimeKey, rid, vrow[1])
+                detailCursor.execute(fetchDetails, values)
+                detailResult = detailCursor.fetchall()
+                for drow in detailResult:
+                    details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
+                    combined_string = vulnerability + '\r\n' + details
+#                    print(combined_string)
+                    createTop10JiraTickets(rid, vrow[1], vrow[2], combined_string)
+                vCount += 1
+                if vCount == 1:
+                    print('********************* end section %s ********************' % (rid))
+                    break
 
+    except Error as e:
+        print('Error at line: ', count)
+        print(e)
 
-'''
-set @ dtk = '0423A';
-set @ rid = 0;
-set @ pid = 22024;
+def searchForIssue():
+    headers = {
+        "Accept": "application/json",
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {base64.b64encode(f"{email}:{api_token}".encode("utf-8")).decode("utf-8")}'
+    }
+    #"Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
+    # Build the JQL query
+    labels = ["22024", "critical"]
+    labels_str = ",".join([f'"{label}"' for label in labels])
+    jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
 
-select
-solution,
-description
-from scorecard
-where
-dtkey =@dtk
-and riskid = @rid
-and pluginid = @pid
-limit 1
-'''
+    params = {
+        "jql": jql_query,
+        "fields": "key,summary,status,labels",  # Add any other fields you want to retrieve
+    }
 
+    response = requests.get(
+        f"{jira_url}/rest/api/3/search",
+        headers=headers,
+        params=params,
+    )
 
+    if response.status_code == 200:
+        issues = response.json()["issues"]
+        print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+        for issue in issues:
+            print(
+                f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+    else:
+        print(f"Failed to search for issues. Status code: {response.status_code}")
+        print(response.text)
+
+# XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX CONSTRUCTOR CODE XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 def main():
-    createTop10JiraTickets()
+    searchForIssue()
 
 
 if __name__ == "__main__":
