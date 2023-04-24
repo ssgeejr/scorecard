@@ -56,11 +56,8 @@ def fetchPriority(risk):
         ddate = thirty_days_later
     return result, jiraPriority, ddate
 
-def createTop10JiraTickets(rid, pluginID, title, description):
+def createTop10JiraTickets(rid, pluginID, title, description, priority, jiraPriority, due_date):
     #print(api_key)
-
-    priority, jiraPriority, due_date = fetchPriority(rid)
-
     assignee_accountId = "603d0d5a5290e700697d72fc"
 
     # Replace these with your own values
@@ -169,7 +166,8 @@ def fetchSQLData():
                     details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
                     combined_string = vulnerability + '\r\n' + details
 #                    print(combined_string)
-                    createTop10JiraTickets(rid, vrow[1], vrow[2], combined_string)
+                    priority, jiraPriority, due_date= fetchPriority(rid)
+                    searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                 vCount += 1
                 if vCount == 1:
                     print('********************* end section %s ********************' % (rid))
@@ -179,7 +177,7 @@ def fetchSQLData():
         print('Error at line: ', count)
         print(e)
 
-def searchForIssue():
+def searchForIssue(rid, pluginID, title, description, priority, jiraPriority, due_date, vcount):
     headers = {
         "Accept": "application/json",
         'Content-Type': 'application/json',
@@ -187,7 +185,7 @@ def searchForIssue():
     }
     #"Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
     # Build the JQL query
-    labels = ["22024", "critical"]
+    labels = [pluginID, priority]
     labels_str = ",".join([f'"{label}"' for label in labels])
     jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
 
@@ -206,16 +204,58 @@ def searchForIssue():
         issues = response.json()["issues"]
         print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
         for issue in issues:
-            print(
-                f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+            print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+            comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe new Vulnerability Count is %s" % (today, vcount))
+            addIssueComment(issue['key'], comment)
     else:
         print(f"Failed to search for issues. Status code: {response.status_code}")
+        print(response.text)
+        createTop10JiraTickets(rid, pluginID, title, description, priority, jiraPriority, due_date)
+
+def addIssueComment(issue_key, comment):
+    headers = {
+        "Accept": "application/json",
+        'Content-Type': 'application/json',
+        'Authorization': f'Basic {base64.b64encode(f"{email}:{api_token}".encode("utf-8")).decode("utf-8")}'
+    }
+
+#    print('ISSUE %s' % issue_key)
+#    print('COMMENT %s' % comment)
+    data = {
+        "body": {
+            "version": 1,
+            "type": "doc",
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": comment
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+
+
+
+    response = requests.post(
+        f"{jira_url}/rest/api/3/issue/{issue_key}/comment",
+        headers=headers,
+        data=json.dumps(data),
+    )
+    if response.status_code == 201:
+        print(f"Comment added successfully to issue {issue_key}.")
+    else:
+        print(f"Failed to add comment to issue. Status code: {response.status_code}")
         print(response.text)
 
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX CONSTRUCTOR CODE XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 def main():
-    searchForIssue()
+    fetchSQLData()
 
 
 if __name__ == "__main__":
