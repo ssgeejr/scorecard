@@ -224,9 +224,11 @@ Calculate percentage for each one, insert into DB
 
 # Tethys Jira Engine
 
-the file tethys.api needs to be stored in the {users_home}/.tethys/tethys.api 
-
+the file tethys.api needs to be stored in the `{users_home}/.tethys/tethys.api`
+ 
+```
 COMPANYID~{jira_company_name}
 USERID~{jira_user_name}
 ASSIGN_TO~{jira_user_id}	# use the FetchUserIDs.py to get this 
 APIKEY~{jira_api_key}
+```
