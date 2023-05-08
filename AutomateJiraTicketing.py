@@ -4,9 +4,21 @@ from mysql.connector import connect, Error
 import requests, time, json, base64, os
 import mysql.connector, configparser
 import logging
+from logging.handlers import RotatingFileHandler
+
 
 class JiraEngine:
-    logging.basicConfig(filename='tethys.jira-engine.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    log_file = 'tethys.jira-engine.log'
+    max_file_size = 5 * 1024 * 1024  # 5 MB
+    backup_count = 5
+    file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
+    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(log_format)
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+
+#    logging.basicConfig(filename='tethys.jira-engine.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     def __init__(self, dateTimeKey):
         self.saturn = Saturn()
@@ -16,10 +28,12 @@ class JiraEngine:
         self.assignee_accountId = self.saturn.get_assign_to()
         self.raw_today = datetime.now()
         self.today = self.raw_today.strftime("%Y-%m-%d")
-        self.raw_fifteen_days_later = self.raw_today + timedelta(days=15)
-        self.fifteen_days_later = self.raw_fifteen_days_later.strftime('%Y-%m-%d')
-        self.raw_thirty_days_later = self.raw_today + timedelta(days=30)
-        self.thirty_days_later = self.raw_thirty_days_later.strftime('%Y-%m-%d')
+        self.raw_critical_high = self.raw_today + timedelta(days=30)
+        self.critical_high_date = self.raw_critical_high.strftime('%Y-%m-%d')
+        self.raw_medium_criticality = self.raw_today + timedelta(days=90)
+        self.medium_date = self.raw_medium_criticality.strftime('%Y-%m-%d')
+        self.raw_low_date = self.raw_today + timedelta(days=180)
+        self.low_date = self.raw_low_date.strftime('%Y-%m-%d')
         self.start_date_field_id = "customfield_10015"
         self.dtkey = time.strftime('%m%y')
         self.userDefinedKey = False
@@ -27,6 +41,8 @@ class JiraEngine:
         self.config = configparser.ConfigParser()
         self.cdir = os.path.dirname(os.path.abspath(__file__))
         self.dateTimeKey = dateTimeKey
+
+
         logging.info('******* Initializing Tethys Jira Engine *********')
 
     def fetchPriority(self, risk):
@@ -36,14 +52,120 @@ class JiraEngine:
         if risk == 0:
             result = 'Critical'
             jiraPriority = 'Highest'
-            ddate = self.fifteen_days_later
+            ddate = self.critical_high_date
         elif risk == 1:
             result = 'High'
             jiraPriority = 'High'
-            ddate = self.thirty_days_later
+            ddate = self.critical_high_date
+        elif risk == 2:
+            result = 'Medium'
+            jiraPriority = 'Medium'
+            ddate = self.medium_date
+        elif risk == 3:
+            result = 'Low'
+            jiraPriority = 'Low'
+            ddate = self.low_date
         return result, jiraPriority, ddate
 
-    def createTop10JiraTickets(self, rid, pluginID, title, description, priority, jiraPriority, due_date):
+    def fetchSQLData(self):
+        count = 0
+        try:
+            print('**********************************************************')
+            print('Configuration File: ', self.configFile)
+            config_source = os.path.join(self.cdir, self.configFile)
+            print('Configuration Source: ', config_source)
+            self.config.read(config_source)
+            print('**********************************************************')
+
+            cnx = mysql.connector.connect(user=self.config['tethys']['user'],
+                                          password=self.config['tethys']['passwd'],
+                                          host=self.config['tethys']['host'],
+                                          database=self.config['tethys']['db'])
+            #            cnx.autocommit = True
+            print(cnx)
+
+            fetchTopVul = ("select count(distinct hash) as total, pluginid, name"
+                           " from scorecard"
+                           " where dtkey = %s and riskid = %s"
+                           " group by name, pluginid"
+                           " order by total"
+                           " desc")
+            fetchDetails = ("select solution, description"
+                            " from scorecard"
+                            " where dtkey = %s and riskid = %s and pluginid = %s"
+                            " limit 1")
+            values_list = [0, 1]
+            #The next version will contain all four items
+            #values_list = [0, 1, 2, 3]
+            # values_list = [0]
+            for rid in values_list:
+                print('********************* Initiate Search for Risk ID [%s] ********************' % (rid))
+                vValues = (self.dateTimeKey, rid)
+                topCursor = cnx.cursor()
+                topCursor.execute(fetchTopVul, vValues)
+                vulResult = topCursor.fetchall()
+                vCount = 0
+                for vrow in vulResult:
+                    vulnerability = ('Count: %s \r\nPluginID: %s\r\nName: %s\r\n' % (vrow[0], vrow[1], vrow[2]))
+                    detailCursor = cnx.cursor()
+                    values = (self.dateTimeKey, rid, vrow[1])
+                    detailCursor.execute(fetchDetails, values)
+                    detailResult = detailCursor.fetchall()
+                    for drow in detailResult:
+                        details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
+                        combined_string = vulnerability + '\r\n' + details
+                        #                    print(combined_string)
+                        priority, jiraPriority, due_date = self.fetchPriority(rid)
+                        logging.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
+                        self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
+                    vCount += 1
+                    print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
+                    if vCount == 10:
+                        print('********************* End Top 10 for RID: %s ********************' % (rid))
+                        break
+
+        except Error as e:
+            print('Error at line: ', count)
+            print(e)
+            logging.error('An exception occurred: %s', e, exc_info=True)
+
+    def searchForIssue(self, rid, pluginID, title, description, priority, jiraPriority, due_date, vcount):
+        headers = {
+            "Accept": "application/json",
+            'Content-Type': 'application/json',
+            'Authorization': f'Basic {base64.b64encode(f"{self.email}:{self.api_token}".encode("utf-8")).decode("utf-8")}'
+        }
+        # "Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
+        # Build the JQL query
+        labels = [pluginID, priority]
+        labels_str = ",".join([f'"{label}"' for label in labels])
+        jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
+
+        params = {
+            "jql": jql_query,
+            "fields": "key,summary,status,labels",  # Add any other fields you want to retrieve
+        }
+
+        response = requests.get(
+            f"{self.jira_url}/rest/api/3/search",
+            headers=headers,
+            params=params,
+        )
+
+        if response.status_code == 200:
+            issues = response.json()["issues"]
+            print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+            logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+            for issue in issues:
+                print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
+                self.addIssueComment(issue['key'], comment)
+        else:
+            print(f"Failed to search for issues. Status code: {response.status_code}")
+            print(response.text)
+            self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
+
+    def createNewJiraTicket(self, rid, pluginID, title, description, priority, jiraPriority, due_date):
         # print(api_key)
         self.assignee_accountId = "603d0d5a5290e700697d72fc"
 
@@ -103,105 +225,11 @@ class JiraEngine:
         # Check the response
         if response.status_code == 201:
             print(f"Task created successfully: {response.json()['key']}")
+            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{vrow[1]}\t{vrow[0]}\t{vrow[2]}]")
             logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
             logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
-
-    def fetchSQLData(self):
-        count = 0
-        try:
-            print('**********************************************************')
-            print('Configuration File: ', self.configFile)
-            config_source = os.path.join(self.cdir, self.configFile)
-            print('Configuration Source: ', config_source)
-            self.config.read(config_source)
-            print('**********************************************************')
-
-            cnx = mysql.connector.connect(user=self.config['tethys']['user'],
-                                          password=self.config['tethys']['passwd'],
-                                          host=self.config['tethys']['host'],
-                                          database=self.config['tethys']['db'])
-            #            cnx.autocommit = True
-            print(cnx)
-
-            fetchTopVul = ("select count(distinct hash) as total, pluginid, name"
-                           " from scorecard"
-                           " where dtkey = %s and riskid = %s"
-                           " group by name, pluginid"
-                           " order by total"
-                           " desc")
-            fetchDetails = ("select solution, description"
-                            " from scorecard"
-                            " where dtkey = %s and riskid = %s and pluginid = %s"
-                            " limit 1")
-            values_list = [0, 1]
-            # values_list = [0]
-            for rid in values_list:
-                print('********************* Initiate Search for Risk ID [%s] ********************' % (rid))
-                vValues = (self.dateTimeKey, rid)
-                topCursor = cnx.cursor()
-                topCursor.execute(fetchTopVul, vValues)
-                vulResult = topCursor.fetchall()
-                vCount = 0
-                for vrow in vulResult:
-                    vulnerability = ('Count: %s \r\nPluginID: %s\r\nName: %s\r\n' % (vrow[0], vrow[1], vrow[2]))
-                    detailCursor = cnx.cursor()
-                    values = (self.dateTimeKey, rid, vrow[1])
-                    detailCursor.execute(fetchDetails, values)
-                    detailResult = detailCursor.fetchall()
-                    for drow in detailResult:
-                        details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
-                        combined_string = vulnerability + '\r\n' + details
-                        #                    print(combined_string)
-                        priority, jiraPriority, due_date = self.fetchPriority(rid)
-#                        self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
-                    vCount += 1
-                    print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
-                    if vCount == 15:
-                        print('********************* End Top 10 for RID: %s ********************' % (rid))
-                        break
-
-        except Error as e:
-            print('Error at line: ', count)
-            print(e)
-            logging.error('An exception occurred: %s', e, exc_info=True)
-
-    def searchForIssue(self, rid, pluginID, title, description, priority, jiraPriority, due_date, vcount):
-        headers = {
-            "Accept": "application/json",
-            'Content-Type': 'application/json',
-            'Authorization': f'Basic {base64.b64encode(f"{self.email}:{self.api_token}".encode("utf-8")).decode("utf-8")}'
-        }
-        # "Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
-        # Build the JQL query
-        labels = [pluginID, priority]
-        labels_str = ",".join([f'"{label}"' for label in labels])
-        jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
-
-        params = {
-            "jql": jql_query,
-            "fields": "key,summary,status,labels",  # Add any other fields you want to retrieve
-        }
-
-        response = requests.get(
-            f"{self.jira_url}/rest/api/3/search",
-            headers=headers,
-            params=params,
-        )
-
-        if response.status_code == 200:
-            issues = response.json()["issues"]
-            print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-            logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-            for issue in issues:
-                print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
-                comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
-                self.addIssueComment(issue['key'], comment)
-        else:
-            print(f"Failed to search for issues. Status code: {response.status_code}")
-            print(response.text)
-            self.createTop10JiraTickets(rid, pluginID, title, description, priority, jiraPriority, due_date)
 
     def addIssueComment(self, issue_key, comment):
         headers = {
@@ -243,4 +271,3 @@ class JiraEngine:
             logging.error(f"Failed to update issue {issue_key} for reason {response.text}")
             print(response.text)
 
-    # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX CONSTRUCTOR CODE XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
