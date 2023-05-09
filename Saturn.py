@@ -7,7 +7,7 @@ class Saturn:
         file_path = os.path.join(home_directory, '.tethys', 'tethys.api')
         with open(file_path, 'r') as f:
             contents = f.read()
-        for line in contents.split('\n'):
+        for line in contents.splitlines():
             key, value = line.split('~')
             if key == 'APIKEY':
                 self.tethys_api_key = value.strip()
