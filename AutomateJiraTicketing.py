@@ -241,7 +241,7 @@ class JiraEngine:
         # Check the response
         if response.status_code == 201:
             print(f"Task created successfully: {response.json()['key']}")
-            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{vrow[1]}\t{vrow[0]}\t{vrow[2]}]")
+            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
             logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
