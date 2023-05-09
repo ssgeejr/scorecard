@@ -21,8 +21,8 @@ class Tethys:
         files = data_engine.fetchFileStack()
  #       files = ['0423A']
         engine = JiraEngine(self.config)
-        for dates in files:
-            engine.fetchSQLData(dates)
+ #       for dates in files:
+ #          engine.fetchSQLData(dates)
 
     def main(self, *argv):
         try:

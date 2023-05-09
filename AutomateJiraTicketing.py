@@ -165,7 +165,7 @@ class JiraEngine:
             if len(issues) == 0:
                 print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
                 logging.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
- #               self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
+                self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
             else:
                 print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
                 logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
