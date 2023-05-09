@@ -42,24 +42,26 @@ class DataEngine:
         for file in glob.glob("*.csv"):
             print('***** LOADING DATA FILE ', file, ' *****')
             old_file = os.path.join(self.working_dir, file)
-            new_file = os.path.join(self.working_dir, file + '.old')
-            print('Using data file: ', os.path.basename(old_file))
 
             if self.userDefinedKey:
                 if selfLoaded:
                     exit(0)
                 print('User Defined Key: ', self.dtkey)
+                old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
                 selfLoaded = True
             else:
                 self.dtkey = Path(old_file).stem
+
+
+            print('Using data file: ', os.path.basename(old_file))
             loadfile_list.append(self.dtkey)
-
-
             self.loadScoredataData(old_file)
+
+            new_file = os.path.join(self.working_dir, file + '.old')
 
             print('New File: ', new_file)
             print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
-            os.rename(old_file, new_file)
+ #           os.rename(old_file, new_file)
         return loadfile_list
 
     def loadScoredataData(self, datafile):

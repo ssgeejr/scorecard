@@ -162,12 +162,17 @@ class JiraEngine:
 
         if response.status_code == 200:
             issues = response.json()["issues"]
-            print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-            logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-            for issue in issues:
-                print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
-                comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
-                self.addIssueComment(issue['key'], comment)
+            if len(issues) == 0:
+                print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
+                logging.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
+ #               self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
+            else:
+                print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+                logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+                for issue in issues:
+                    print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                    comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
+                    self.addIssueComment(issue['key'], comment)
         else:
             print(f"Failed to search for issues. Status code: {response.status_code}")
             print(response.text)
