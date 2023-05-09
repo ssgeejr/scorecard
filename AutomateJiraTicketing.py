@@ -145,10 +145,9 @@ class JiraEngine:
         }
         # "Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
         # Build the JQL query
-        labels = [pluginID, priority]
-        labels_str = ",".join([f'"{label}"' for label in labels])
-        jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
+        jql_query = f"labels = '{pluginID}' AND labels = '{priority}' AND status != 'Done'"
         print(f'SEARCHING FOR JIRA TICKETS USING JQL QUERY {jql_query}')
+        return
 
         params = {
             "jql": jql_query,
