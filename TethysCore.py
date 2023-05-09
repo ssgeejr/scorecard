@@ -7,11 +7,13 @@ from TethysConfig import Config
 
 class DataEngine:
     def __init__(self, config: Config):
+        self.config = configparser.ConfigParser()
+        #Shared Configuration Settings
         self.dtkey = config.dtkey
         self.userDefinedKey = config.userDefinedKey
         self.configFile = config.configFile
         self.cdir = config.cdir
-        self.config = configparser.ConfigParser()
+        self.working_dir = config.working_dir
 
     def fetchRiskID(self, risk):
         result = -99
