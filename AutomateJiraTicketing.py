@@ -5,6 +5,7 @@ import requests, time, json, base64, os
 import mysql.connector, configparser
 import logging
 from logging.handlers import RotatingFileHandler
+from TethysConfig import Config
 
 
 class JiraEngine:
@@ -20,12 +21,17 @@ class JiraEngine:
 
 #    logging.basicConfig(filename='tethys.jira-engine.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    def __init__(self, dateTimeKey):
+    def setAssignTo(self, at):
+        self.assignee_accountId=at
+
+    def __init__(self, config: Config):
         self.saturn = Saturn()
         self.api_token = self.saturn.get_api_key()
         self.email = self.saturn.get_user_id()
         self.jira_url = self.saturn.get_jira_url()
         self.assignee_accountId = self.saturn.get_assign_to()
+        self.config = configparser.ConfigParser()
+
         self.raw_today = datetime.now()
         self.today = self.raw_today.strftime("%Y-%m-%d")
         self.raw_critical_high = self.raw_today + timedelta(days=30)
@@ -35,12 +41,12 @@ class JiraEngine:
         self.raw_low_date = self.raw_today + timedelta(days=180)
         self.low_date = self.raw_low_date.strftime('%Y-%m-%d')
         self.start_date_field_id = "customfield_10015"
-        self.dtkey = time.strftime('%m%y')
-        self.userDefinedKey = False
-        self.configFile = 'tethys.ini'
-        self.config = configparser.ConfigParser()
-        self.cdir = os.path.dirname(os.path.abspath(__file__))
-        self.dateTimeKey = dateTimeKey
+        #config settings for global definitions
+        self.dtkey = config.dtkey
+        self.userDefinedKey = config.userDefinedKey
+        self.configFile = config.configFile
+        self.cdir = config.cdir
+        self.dateTimeKey = ''
 
 
         logging.info('******* Initializing Tethys Jira Engine *********')
@@ -67,7 +73,9 @@ class JiraEngine:
             ddate = self.low_date
         return result, jiraPriority, ddate
 
-    def fetchSQLData(self):
+    def fetchSQLData(self, dateTimeKey):
+        self.dateTimeKey = dateTimeKey
+
         count = 0
         try:
             print('**********************************************************')
@@ -117,10 +125,10 @@ class JiraEngine:
                         #                    print(combined_string)
                         priority, jiraPriority, due_date = self.fetchPriority(rid)
                         logging.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
-                        self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
+ #                       self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
-                    if vCount == 10:
+                    if vCount == 1:
                         print('********************* End Top 10 for RID: %s ********************' % (rid))
                         break
 
