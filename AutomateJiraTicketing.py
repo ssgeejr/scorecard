@@ -118,6 +118,7 @@ class JiraEngine:
                     values = (self.dateTimeKey, rid, vrow[1])
                     detailCursor.execute(fetchDetails, values)
                     detailResult = detailCursor.fetchall()
+                    print(f'PluginID {vrow[1]}')
                     for drow in detailResult:
                         details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
                         combined_string = vulnerability + '\r\n' + details
