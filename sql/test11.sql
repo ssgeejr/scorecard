@@ -1,4 +1,4 @@
-SET @rid = 1;
+SET @rid = 0;
 SET @old = '0922B';
 SET @new = '1022B';
 
@@ -8,7 +8,7 @@ select
 from
 	scorecard
 where
-	dtkey = @new
+	dtkey = @old
     and riskid = @rid
     and hash not in (
 		select
@@ -16,8 +16,8 @@ where
 		from 
 			scorecard
 		where
-			dtkey = @old
+			dtkey = @new
             and riskid = @rid
 	)
-group by
-	rid;
+group by 
+	rid

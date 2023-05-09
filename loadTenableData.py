@@ -187,7 +187,7 @@ def loadScoredataData(datafile):
                         loaded_records += 1
                         # if count > 10: return
                         if (loaded_records % 1000) == 0:
-                            print("commiting another 1000 records: ", loaded_records)
+                            print("committing another 1000 records: ", loaded_records)
                             cnx.commit()
                 count += 1
 
