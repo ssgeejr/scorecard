@@ -148,6 +148,7 @@ class JiraEngine:
         labels = [pluginID, priority]
         labels_str = ",".join([f'"{label}"' for label in labels])
         jql_query = f'labels in ({labels_str}) AND statusCategory != Done'
+        print(f'SEARCHING FOR JIRA TICKETS USING JQL QUERY {jql_query}')
 
         params = {
             "jql": jql_query,
@@ -162,6 +163,10 @@ class JiraEngine:
 
         if response.status_code == 200:
             issues = response.json()["issues"]
+
+            print('*********************************************************************')
+            print(f'The issue query length is {len(issues)}')
+            print('*********************************************************************')
             if len(issues) == 0:
                 print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
                 logging.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
@@ -174,7 +179,7 @@ class JiraEngine:
                     comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
                     self.addIssueComment(issue['key'], comment)
         else:
-            print(f"Failed to search for issues. Status code: {response.status_code}")
+            print(f"Failed to find for issues. Status code: {response.status_code}")
             print(response.text)
             self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
 
