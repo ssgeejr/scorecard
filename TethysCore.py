@@ -38,30 +38,31 @@ class DataEngine:
     def fetchFileStack(self):
         os.chdir(self.working_dir)
         loadfile_list = []
-        selfLoaded = False
+        if self.userDefinedKey:
+            loadfile_list.append(self.dtkey)
+            print('User Defined Key: ', self.dtkey)
+            old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
+            print(f'USER_DEFINED_LOAD_FILE: {old_file}')
+            self.loadScoredataData(old_file)
+            new_file = os.path.join(self.working_dir, old_file + '.old')
+        #            os.rename(old_file, new_file)
+            return loadfile_list
+
         for file in glob.glob("*.csv"):
             print('***** LOADING DATA FILE ', file, ' *****')
             old_file = os.path.join(self.working_dir, file)
-
-            if self.userDefinedKey:
-                if selfLoaded:
-                    exit(0)
-                print('User Defined Key: ', self.dtkey)
-                old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
-                selfLoaded = True
-            else:
-                self.dtkey = Path(old_file).stem
-
+            new_file = os.path.join(self.working_dir, file + '.old')
+            loadfile_list.append(self.dtkey)
+            self.dtkey = Path(old_file).stem
+            loadfile_list.append(self.dtkey)
 
             print('Using data file: ', os.path.basename(old_file))
-            loadfile_list.append(self.dtkey)
             self.loadScoredataData(old_file)
-
-            new_file = os.path.join(self.working_dir, file + '.old')
+            loadfile_list.append(self.dtkey)
 
             print('New File: ', new_file)
             print('***** FILE LOAD COMPLETED - RENAMING TO *.old *****')
- #           os.rename(old_file, new_file)
+            os.rename(old_file, new_file)
         return loadfile_list
 
     def loadScoredataData(self, datafile):
