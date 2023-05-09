@@ -128,7 +128,7 @@ class JiraEngine:
                         self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
-                    if vCount == 10:
+                    if vCount == 2:
                         print('********************* End Top 10 for RID: %s ********************' % (rid))
                         break
 
@@ -146,8 +146,7 @@ class JiraEngine:
         # "Authorization": f"Basic {requests.auth._basic_auth_str(email, api_token)}",
         # Build the JQL query
         jql_query = f"labels = '{pluginID}' AND labels = '{priority}' AND status != 'Done'"
-        print(f'SEARCHING FOR JIRA TICKETS USING JQL QUERY {jql_query}')
-        return
+#        print(f'SEARCHING FOR JIRA TICKETS USING JQL QUERY {jql_query}')
 
         params = {
             "jql": jql_query,
