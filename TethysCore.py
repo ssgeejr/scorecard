@@ -127,13 +127,12 @@ class DataEngine:
                                 self.validateData(lines, 10), self.validateData(lines, 11), self.validateData(lines, 12),
                                 hashlib.md5((lines[0] + "" + lines[4]).encode()).hexdigest()
                             )
-
-                        mycursor.execute(sql, values)
-                        loaded_records += 1
-                        if (loaded_records % 1000) == 0:
-                            print("committing another 1000 records: ", loaded_records)
-                            cnx.commit()
-                    count += 1
+                            mycursor.execute(sql, values)
+                            loaded_records += 1
+                            if (loaded_records % 1000) == 0:
+                                print("committing another 1000 records: ", loaded_records)
+                                cnx.commit()
+                            count += 1
 
                 cnx.commit()
                 print("Total records scanned: ", count)
