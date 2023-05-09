@@ -49,6 +49,7 @@ class DataEngine:
             new_file = os.path.join(self.working_dir, old_file + '.old')
             os.rename(old_file, new_file)
             return loadfile_list
+
         print('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
         for file in glob.glob("*.csv"):
             print('***** LOADING DATA FILE ', file, ' *****')
@@ -57,6 +58,7 @@ class DataEngine:
             self.dtkey = Path(old_file).stem
             print(f'Using data file: {old_file} and dtkey {self.dtkey}')
             self.loadScoredataData(old_file)
+
             loadfile_list.append(self.dtkey)
             print(f'Successfully loaded {old_file} attempting to rename to {new_file}')
             print('***** FILE LOAD COMPLETED *****')
@@ -84,7 +86,7 @@ class DataEngine:
                                               host=self.config['tethys']['host'],
                                               database=self.config['tethys']['db'])
 
-                print(cnx)
+#                print(cnx)
                 mycursor = cnx.cursor()
 
                 sql = ("insert into scorecard"
@@ -107,6 +109,9 @@ class DataEngine:
                        + " values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
                 print(sql)
+
+                print('**********************************************************')
+
                 loaded_records = 0
                 for lines in csvFile:
                     if count > 0:
@@ -125,7 +130,7 @@ class DataEngine:
                             if (loaded_records % 1000) == 0:
                                 print("committing another 1000 records: ", loaded_records)
                                 cnx.commit()
-                            count += 1
+                    count += 1
 
                 cnx.commit()
                 print("Total records scanned: ", count)
