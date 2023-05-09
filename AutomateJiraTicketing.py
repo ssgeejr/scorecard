@@ -75,7 +75,6 @@ class JiraEngine:
 
     def fetchSQLData(self, dateTimeKey):
         self.dateTimeKey = dateTimeKey
-
         count = 0
         try:
             print('**********************************************************')
@@ -90,7 +89,7 @@ class JiraEngine:
                                           host=self.config['tethys']['host'],
                                           database=self.config['tethys']['db'])
             #            cnx.autocommit = True
-            print(cnx)
+            #print(cnx)
 
             fetchTopVul = ("select count(distinct hash) as total, pluginid, name"
                            " from scorecard"

@@ -49,7 +49,7 @@ class DataEngine:
             new_file = os.path.join(self.working_dir, old_file + '.old')
             os.rename(old_file, new_file)
             return loadfile_list
-
+        print('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
         for file in glob.glob("*.csv"):
             print('***** LOADING DATA FILE ', file, ' *****')
             old_file = os.path.join(self.working_dir, file)
