@@ -118,7 +118,7 @@ class JiraEngine:
                     values = (self.dateTimeKey, rid, vrow[1])
                     detailCursor.execute(fetchDetails, values)
                     detailResult = detailCursor.fetchall()
-                    print(f'PluginID {vrow[1]}')
+#                    print(f'PluginID {vrow[1]}')
                     for drow in detailResult:
                         details = ('Solution: %s \r\n\r\nDescription: %s' % (drow[0], drow[1]))
                         combined_string = vulnerability + '\r\n' + details
@@ -128,7 +128,7 @@ class JiraEngine:
                         self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
-                    if vCount == 2:
+                    if vCount == 10:
                         print('********************* End Top 10 for RID: %s ********************' % (rid))
                         break
 
@@ -162,9 +162,6 @@ class JiraEngine:
         if response.status_code == 200:
             issues = response.json()["issues"]
 
-            print('*********************************************************************')
-            print(f'The issue query length is {len(issues)}')
-            print('*********************************************************************')
             if len(issues) == 0:
                 print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
                 logging.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
@@ -240,8 +237,8 @@ class JiraEngine:
 
         # Check the response
         if response.status_code == 201:
-            print(f"Task created successfully: {response.json()['key']}")
-            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
+            print(f"Jira Ticket created successfully: {response.json()['key']}")
+#            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
             logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
