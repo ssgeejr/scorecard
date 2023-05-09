@@ -22,7 +22,8 @@ class Tethys:
         #       files = ['0423A']
         engine = JiraEngine(self.config)
         for dates in files:
-            engine.fetchSQLData(dates)
+            print(f'ATTEMPTING TO LOAD TOP 10 JIRA TICKET DATA FOR {dates}')
+#            engine.fetchSQLData(dates)
 
     def main(self, *argv):
         try:

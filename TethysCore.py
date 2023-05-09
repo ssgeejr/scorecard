@@ -112,12 +112,10 @@ class DataEngine:
                        + " values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
                 print(sql)
-
                 loaded_records = 0
-
                 for lines in csvFile:
                     if count > 0:
-                        datakey = lines[0] + lines[4]
+                        print(f'Seeking RiskID for {lines[3]}')
                         riskid = self.fetchRiskID(lines[3])
                         if riskid > -1:
                             values = (
