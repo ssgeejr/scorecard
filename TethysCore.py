@@ -115,7 +115,6 @@ class DataEngine:
                 loaded_records = 0
                 for lines in csvFile:
                     if count > 0:
-                        print(f'Seeking RiskID for {lines[3]}')
                         riskid = self.fetchRiskID(lines[3])
                         if riskid > -1:
                             values = (
@@ -128,13 +127,13 @@ class DataEngine:
                             mycursor.execute(sql, values)
                             loaded_records += 1
                             if (loaded_records % 1000) == 0:
-                                print("committing another 1000 records: ", loaded_records)
+                                print("   committing 1000 records: ", loaded_records)
                                 cnx.commit()
                     count += 1
 
                 cnx.commit()
                 print("Total records scanned: ", count)
-                print("Total records loaded: ", loaded_records)
+                print("Total records committed: ", loaded_records)
             except Error as e:
                 print('Error at line: ', count)
                 print(e)
