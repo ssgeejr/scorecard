@@ -55,12 +55,9 @@ class DataEngine:
             old_file = os.path.join(self.working_dir, file)
             new_file = os.path.join(self.working_dir, file + '.old')
             self.dtkey = Path(old_file).stem
-            loadfile_list.append(self.dtkey)
-
             print(f'Using data file: {old_file} and dtkey {self.dtkey}')
             self.loadScoredataData(old_file)
             loadfile_list.append(self.dtkey)
-
             print(f'Successfully loaded {old_file} attempting to rename to {new_file}')
             print('***** FILE LOAD COMPLETED *****')
             os.rename(old_file, new_file)
@@ -68,14 +65,12 @@ class DataEngine:
 
     def loadScoredataData(self, datafile):
         dt = time.strftime('%Y%m%d')
-
+        print(f'Attempting to open data in readonly mode {datafile}')
         with open(datafile, mode='r') as file:
-
             # reading the CSV file
             csvFile = csv.reader(file)
             count = 0
             print('USING DTKEY: ', self.dtkey)
-
             try:
                 print('**********************************************************')
                 print('Configuration File: ', self.configFile)
