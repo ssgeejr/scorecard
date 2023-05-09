@@ -128,7 +128,7 @@ class JiraEngine:
  #                       self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
-                    if vCount == 1:
+                    if vCount == 10:
                         print('********************* End Top 10 for RID: %s ********************' % (rid))
                         break
 
