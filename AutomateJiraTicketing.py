@@ -170,7 +170,7 @@ class JiraEngine:
                 print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
                 logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
                 for issue in issues:
-                    print(f"{issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                    print(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
                     comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
                     self.addIssueComment(issue['key'], comment)
         else:
@@ -239,6 +239,7 @@ class JiraEngine:
         if response.status_code == 201:
             print(f"Jira Ticket created successfully: {response.json()['key']}")
 #            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
+            print(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: {pluginID}, {priority}")
             logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
