@@ -181,7 +181,7 @@ class JiraEngine:
 
     def createNewJiraTicket(self, rid, pluginID, title, description, priority, jiraPriority, due_date):
         # print(api_key)
-        self.assignee_accountId = "603d0d5a5290e700697d72fc"
+        #self.assignee_accountId = "603d0d5a5290e700697d72fc"
 
         # Replace these with your own values
         project_key = 'ISS'
