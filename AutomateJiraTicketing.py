@@ -12,7 +12,6 @@ class JiraEngine:
     log_file = 'tethys.jira-engine.log'
     max_file_size = 5 * 1024 * 1024  # 5 MB
     backup_count = 5
-    year = datetime.today().year
     file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
     log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(log_format)
@@ -189,7 +188,7 @@ class JiraEngine:
         issue_type = 'Task'
         summary = ('%s %s %s' % (priority, pluginID, title))
         # description = 'This task has specific priority, assignee, and start date set using the REST API.'
-        labels = [pluginID, priority, year]
+        labels = [pluginID, priority, datetime.today().year]
 
         # Set up the request headers
         headers = {
