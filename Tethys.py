@@ -27,7 +27,7 @@ class Tethys:
 
     def main(self, *argv):
         try:
-            opts, args = getopt.getopt(argv, "h:c:p:w:a:j:")
+            opts, args = getopt.getopt(argv, "h:c:p:w:a:j")
         except getopt.GetoptError as e:
             print('>>>> ERROR: %s' % str(e))
             sys.exit(2)
