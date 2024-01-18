@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from mysql.connector import connect, Error
 import requests, time, json, base64, os
 import mysql.connector, configparser
-import logging
+import logging, sys
 from logging.handlers import RotatingFileHandler
 from TethysConfig import Config
 
@@ -12,6 +12,7 @@ class JiraEngine:
     log_file = 'tethys.jira-engine.log'
     max_file_size = 5 * 1024 * 1024  # 5 MB
     backup_count = 5
+    os.remove(log_file)
     file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
     log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     file_handler.setFormatter(log_format)
@@ -245,7 +246,8 @@ class JiraEngine:
             logging.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
-            logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
+            logging.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
+            #logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
 
     def addIssueComment(self, issue_key, comment):
         headers = {
@@ -286,4 +288,3 @@ class JiraEngine:
             print(f"Failed to add comment to issue. Status code: {response.status_code}")
             logging.error(f"Failed to update issue {issue_key} for reason {response.text}")
             print(response.text)
-

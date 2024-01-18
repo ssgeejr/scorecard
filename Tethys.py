@@ -27,10 +27,11 @@ class Tethys:
 
     def main(self, *argv):
         try:
-            opts, args = getopt.getopt(argv, "h:c:p:w:a:")
+            opts, args = getopt.getopt(argv, "h:c:p:w:a:j:")
         except getopt.GetoptError as e:
             print('>>>> ERROR: %s' % str(e))
             sys.exit(2)
+        jiraonly = False
         for opt, arg in opts:
             if opt == '-h':
                 print('dataloader.py -h \nHelp Message')
@@ -49,8 +50,14 @@ class Tethys:
                 self.config.dtkey = arg
             elif opt in "-w":
                 self.config.working_dir = arg
+            elif opt in "-j":
+                jiraonly = True
 
-        self.runTethys()
+        if jiraonly:
+            engine = JiraEngine(self.config)
+            engine.fetchSQLData(self.config.dtkey)
+        else:
+            self.runTethys()
 
 
 if __name__ == "__main__":
