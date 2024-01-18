@@ -48,6 +48,8 @@ class JiraEngine:
         self.configFile = config.configFile
         self.cdir = config.cdir
         self.dateTimeKey = ''
+        current_date = datetime.now()
+        self.year = current_date.strftime("%Y")
 
 
         logging.info('******* Initializing Tethys Jira Engine *********')
@@ -189,7 +191,8 @@ class JiraEngine:
         issue_type = 'Task'
         summary = ('%s %s %s' % (priority, pluginID, title))
         # description = 'This task has specific priority, assignee, and start date set using the REST API.'
-        labels = [pluginID, priority, datetime.today().year]
+
+        labels = [pluginID, priority, self.dtkey, self.year]
 
         # Set up the request headers
         headers = {
