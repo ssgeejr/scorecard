@@ -5,28 +5,6 @@ from pathlib import Path
 from TethysConfig import Config
 from logging.handlers import RotatingFileHandler
 
-log_file = 'tethys.TethysCore.log'
-max_file_size = 5 * 1024 * 1024  # 5 MB
-backup_count = 5
-if os.path.exists(log_file):
-    os.remove(log_file)
-
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
-log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(log_format)
-file_handler.setLevel(logging.INFO)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-
 class DataEngine:
 
 
@@ -38,6 +16,25 @@ class DataEngine:
         self.configFile = config.configFile
         self.cdir = config.cdir
         self.working_dir = config.working_dir
+        log_file = 'tethys.TethysCore.log'
+        max_file_size = 5 * 1024 * 1024  # 5 MB
+        backup_count = 5
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.INFO)
+
+        file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
+        log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        file_handler.setLevel(logging.INFO)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
 
     def fetchRiskID(self, risk):
         result = -99
@@ -60,55 +57,55 @@ class DataEngine:
             return ''
 
     def fetchFileStack(self):
-        logger.info(f'Switching to working directory: {self.working_dir}')
+        self.logger.info(f'Switching to working directory: {self.working_dir}')
         os.chdir(self.working_dir)
         loadfile_list = []
-        logger.info(f'Using User Defined Key: {self.userDefinedKey}')
+        self.logger.info(f'Using User Defined Key: {self.userDefinedKey}')
         if self.userDefinedKey:
-            logger.info('User Defined Key: ', self.dtkey)
+            self.logger.info('User Defined Key: ', self.dtkey)
             old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
-            logger.info(f'USER_DEFINED_LOAD_FILE: {old_file} WITH DTKEY {self.dtkey}')
+            self.logger.info(f'USER_DEFINED_LOAD_FILE: {old_file} WITH DTKEY {self.dtkey}')
             self.loadScoredataData(old_file)
             loadfile_list.append(self.dtkey)
             new_file = os.path.join(self.working_dir, old_file + '.old')
             os.rename(old_file, new_file)
             return loadfile_list
 
-        logger.info('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
+        self.logger.info('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
         for file in glob.glob("*.csv"):
             try:
-                logger.info('***** LOADING DATA FILE ', file, ' *****')
+                self.logger.info('***** LOADING DATA FILE ', file, ' *****')
                 old_file = os.path.join(self.working_dir, file)
                 new_file = os.path.join(self.working_dir, file + '.old')
                 self.dtkey = Path(old_file).stem
-                logger.info(f'Using data file: {old_file} and dtkey {self.dtkey}')
+                self.logger.info(f'Using data file: {old_file} and dtkey {self.dtkey}')
                 self.loadScoredataData(old_file)
                 loadfile_list.append(self.dtkey)
-                logger.info(f'Successfully loaded {old_file} attempting to rename to {new_file}')
-                logger.info('***** FILE LOAD COMPLETED *****')
+                self.logger.info(f'Successfully loaded {old_file} attempting to rename to {new_file}')
+                self.logger.info('***** FILE LOAD COMPLETED *****')
                 os.rename(old_file, new_file)
             except Exception as e:
-                logger.error("An error occurred in the data loading process ...")
-                logger.error(e)
+                self.logger.error("An error occurred in the data loading process ...")
+                self.logger.error(e)
 
 
         return loadfile_list
 
     def loadScoredataData(self, datafile):
         dt = time.strftime('%Y%m%d')
-        logger.info(f'Attempting to open data in readonly mode {datafile}')
+        self.logger.info(f'Attempting to open data in readonly mode {datafile}')
         with open(datafile, mode='r') as file:
             # reading the CSV file
             csvFile = csv.reader(file)
             count = 0
-            logger.info('USING DTKEY: ', self.dtkey)
+            self.logger.info('USING DTKEY: ', self.dtkey)
             try:
-                logger.info('**********************************************************')
-                logger.info('Configuration File: ', self.configFile)
+                self.logger.info('**********************************************************')
+                self.logger.info('Configuration File: ', self.configFile)
                 config_source = os.path.join(self.cdir, self.configFile)
-                logger.info('Configuration Source: ', config_source)
+                self.logger.info('Configuration Source: ', config_source)
                 self.config.read(config_source)
-                logger.info('**********************************************************')
+                self.logger.info('**********************************************************')
 
                 cnx = mysql.connector.connect(user=self.config['tethys']['user'],
                                               password=self.config['tethys']['passwd'],
@@ -156,19 +153,19 @@ class DataEngine:
                             mycursor.execute(sql, values)
                             loaded_records += 1
                             if (loaded_records % 1000) == 0:
-                                logger.info("   committing 1000 records: ", loaded_records)
+                                self.logger.info("   committing 1000 records: ", loaded_records)
                                 cnx.commit()
                     count += 1
 
                 cnx.commit()
-                logger.info("Total records scanned: ", count)
-                logger.info("Total records committed: ", loaded_records)
+                self.logger.info("Total records scanned: ", count)
+                self.logger.info("Total records committed: ", loaded_records)
             except Error as e:
-                logger.error('TethysCore::Error at line: ', count)
-                logger.error('===========================================')
-                logger.error(values)
-                logger.error('===========================================')
-                logger.error(e)
+                self.logger.error('TethysCore::Error at line: ', count)
+                self.logger.error('===========================================')
+                self.logger.error(values)
+                self.logger.error('===========================================')
+                self.logger.error(e)
                 raise ValueError("Database Failure: attempting to stop all processing")
 
     def fetchIndex(self, line, index):

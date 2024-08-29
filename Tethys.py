@@ -11,6 +11,7 @@ class Tethys:
     def __init__(self):
         self.config = Config()
 
+
     def runTethys(self):
         print(self.config.configFile)
         print(self.config.user_id)

@@ -7,23 +7,10 @@ import logging, sys
 from logging.handlers import RotatingFileHandler
 from TethysConfig import Config
 
-log_file = 'tethys.jira-engine.log'
-max_file_size = 5 * 1024 * 1024  # 5 MB
-backup_count = 5
-if os.path.exists(log_file):
-    os.remove(log_file)
-file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
-log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(log_format)
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
+
 
 
 class JiraEngine:
-
-#    logging.basicConfig(filename='tethys.jira-engine.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
     def setAssignTo(self, at):
         self.assignee_accountId=at
 
@@ -52,9 +39,19 @@ class JiraEngine:
         self.dateTimeKey = ''
         current_date = datetime.now()
         self.year = current_date.strftime("%Y")
+        log_file = 'tethys.jira-engine.log'
+        max_file_size = 5 * 1024 * 1024  # 5 MB
+        backup_count = 5
+        if os.path.exists(log_file):
+            os.remove(log_file)
+        file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
+        log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(log_format)
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.INFO)
+        self.logger.addHandler(file_handler)
 
-
-        logger.info('******* Initializing Tethys Jira Engine *********')
+        self.logger.info('******* Initializing Tethys Jira Engine *********')
 
     def fetchPriority(self, risk):
         result = -99;
@@ -140,7 +137,7 @@ class JiraEngine:
         except Error as e:
             print('Error at line: ', count)
             print(e)
-            logger.error('An exception occurred: %s', e, exc_info=True)
+            self.logger.error('An exception occurred: %s', e, exc_info=True)
 
     def searchForIssue(self, rid, pluginID, title, description, priority, jiraPriority, due_date, vcount):
         headers = {
@@ -248,10 +245,10 @@ class JiraEngine:
 #            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
             print(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: {pluginID}, {priority}")
 #            logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
-            logger.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
+            self.logger.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
-            logger.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
+            self.logger.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
             #logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
 
     def addIssueComment(self, issue_key, comment):
@@ -288,8 +285,8 @@ class JiraEngine:
         )
         if response.status_code == 201:
             print(f"Comment added successfully to issue {issue_key}.")
-            logger.info(f"Successfully added comments to issue {issue_key}.")
+            self.logger.info(f"Successfully added comments to issue {issue_key}.")
         else:
             print(f"Failed to add comment to issue. Status code: {response.status_code}")
-            logger.error(f"Failed to update issue {issue_key} for reason {response.text}")
+            self.logger.error(f"Failed to update issue {issue_key} for reason {response.text}")
             print(response.text)
