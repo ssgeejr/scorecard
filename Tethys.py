@@ -13,10 +13,10 @@ class Tethys:
 
 
     def runTethys(self):
-        print(self.config.configFile)
-        print(self.config.user_id)
-        print(self.config.dtkey)
-        print(self.config.working_dir)
+        print(f'Config File: {self.config.configFile}')
+        print(f'User ID {self.config.user_id}')
+        print(f'DTKEY {self.config.dtkey}')
+        print(f'Working Directory {self.config.working_dir}')
 
         data_engine = DataEngine(self.config)
         files = data_engine.fetchFileStack()
