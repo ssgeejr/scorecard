@@ -41,28 +41,33 @@ class DataEngine:
         loadfile_list = []
         print(f'Using User Defined Key: {self.userDefinedKey}')
         if self.userDefinedKey:
-            loadfile_list.append(self.dtkey)
             print('User Defined Key: ', self.dtkey)
             old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
             print(f'USER_DEFINED_LOAD_FILE: {old_file} WITH DTKEY {self.dtkey}')
             self.loadScoredataData(old_file)
+            loadfile_list.append(self.dtkey)
             new_file = os.path.join(self.working_dir, old_file + '.old')
             os.rename(old_file, new_file)
             return loadfile_list
 
         print('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
         for file in glob.glob("*.csv"):
-            print('***** LOADING DATA FILE ', file, ' *****')
-            old_file = os.path.join(self.working_dir, file)
-            new_file = os.path.join(self.working_dir, file + '.old')
-            self.dtkey = Path(old_file).stem
-            print(f'Using data file: {old_file} and dtkey {self.dtkey}')
-            self.loadScoredataData(old_file)
+            try:
+                print('***** LOADING DATA FILE ', file, ' *****')
+                old_file = os.path.join(self.working_dir, file)
+                new_file = os.path.join(self.working_dir, file + '.old')
+                self.dtkey = Path(old_file).stem
+                print(f'Using data file: {old_file} and dtkey {self.dtkey}')
+                self.loadScoredataData(old_file)
+                loadfile_list.append(self.dtkey)
+                print(f'Successfully loaded {old_file} attempting to rename to {new_file}')
+                print('***** FILE LOAD COMPLETED *****')
+                os.rename(old_file, new_file)
+            except Exception as e:
+                print("An error occurred in the data loading process ...")
+                print(e)
 
-            loadfile_list.append(self.dtkey)
-            print(f'Successfully loaded {old_file} attempting to rename to {new_file}')
-            print('***** FILE LOAD COMPLETED *****')
-            os.rename(old_file, new_file)
+
         return loadfile_list
 
     def loadScoredataData(self, datafile):
@@ -139,8 +144,8 @@ class DataEngine:
                 print('===========================================')
                 print(values)
                 print('===========================================')
-
                 print(e)
+                raise ValueError("Database Failure: attempting to stop all processing")
 
     def fetchIndex(self, line, index):
         try:
