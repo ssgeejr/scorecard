@@ -135,7 +135,11 @@ class DataEngine:
                 print("Total records scanned: ", count)
                 print("Total records committed: ", loaded_records)
             except Error as e:
-                print('Error at line: ', count)
+                print('TethysCore::Error at line: ', count)
+                print('===========================================')
+                print(values)
+                print('===========================================')
+
                 print(e)
 
     def fetchIndex(self, line, index):
