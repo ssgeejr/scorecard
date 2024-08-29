@@ -8,7 +8,9 @@ from logging.handlers import RotatingFileHandler
 log_file = 'tethys.TethysCore.log'
 max_file_size = 5 * 1024 * 1024  # 5 MB
 backup_count = 5
-os.remove(log_file)
+if os.path.exists(log_file):
+    os.remove(log_file)
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

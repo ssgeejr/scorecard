@@ -10,7 +10,8 @@ from TethysConfig import Config
 log_file = 'tethys.jira-engine.log'
 max_file_size = 5 * 1024 * 1024  # 5 MB
 backup_count = 5
-os.remove(log_file)
+if os.path.exists(log_file):
+    os.remove(log_file)
 file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
 log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(log_format)
