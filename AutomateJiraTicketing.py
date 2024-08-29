@@ -7,18 +7,19 @@ import logging, sys
 from logging.handlers import RotatingFileHandler
 from TethysConfig import Config
 
+log_file = 'tethys.jira-engine.log'
+max_file_size = 5 * 1024 * 1024  # 5 MB
+backup_count = 5
+os.remove(log_file)
+file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
+log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(log_format)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
+
 
 class JiraEngine:
-    log_file = 'tethys.jira-engine.log'
-    max_file_size = 5 * 1024 * 1024  # 5 MB
-    backup_count = 5
-    os.remove(log_file)
-    file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
-    log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(log_format)
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
 
 #    logging.basicConfig(filename='tethys.jira-engine.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -52,7 +53,7 @@ class JiraEngine:
         self.year = current_date.strftime("%Y")
 
 
-        logging.info('******* Initializing Tethys Jira Engine *********')
+        logger.info('******* Initializing Tethys Jira Engine *********')
 
     def fetchPriority(self, risk):
         result = -99;
@@ -127,7 +128,7 @@ class JiraEngine:
                         combined_string = vulnerability + '\r\n' + details
                         #                    print(combined_string)
                         priority, jiraPriority, due_date = self.fetchPriority(rid)
-                        logging.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
+                        logger.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
                         self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
@@ -138,7 +139,7 @@ class JiraEngine:
         except Error as e:
             print('Error at line: ', count)
             print(e)
-            logging.error('An exception occurred: %s', e, exc_info=True)
+            logger.error('An exception occurred: %s', e, exc_info=True)
 
     def searchForIssue(self, rid, pluginID, title, description, priority, jiraPriority, due_date, vcount):
         headers = {
@@ -167,14 +168,14 @@ class JiraEngine:
 
             if len(issues) == 0:
                 print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
-                logging.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
+                logger.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
                 self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
             else:
                 print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-                logging.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+                logger.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
                 for issue in issues:
                     print(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
-                    logging.info(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                    logger.info(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
                     comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
                     self.addIssueComment(issue['key'], comment)
         else:
@@ -246,10 +247,10 @@ class JiraEngine:
 #            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
             print(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: {pluginID}, {priority}")
 #            logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
-            logging.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
+            logger.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
         else:
             print(f"Error creating task: {response.status_code} - {response.text}")
-            logging.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
+            logger.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
             #logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
 
     def addIssueComment(self, issue_key, comment):
@@ -286,8 +287,8 @@ class JiraEngine:
         )
         if response.status_code == 201:
             print(f"Comment added successfully to issue {issue_key}.")
-            logging.info(f"Successfully added comments to issue {issue_key}.")
+            logger.info(f"Successfully added comments to issue {issue_key}.")
         else:
             print(f"Failed to add comment to issue. Status code: {response.status_code}")
-            logging.error(f"Failed to update issue {issue_key} for reason {response.text}")
+            logger.error(f"Failed to update issue {issue_key} for reason {response.text}")
             print(response.text)
