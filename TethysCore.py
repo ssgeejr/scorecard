@@ -62,7 +62,7 @@ class DataEngine:
         loadfile_list = []
         self.logger.info(f'Using User Defined Key: {self.userDefinedKey}')
         if self.userDefinedKey:
-            self.logger.info('User Defined Key: ', self.dtkey)
+            self.logger.info('User Defined Key: %s', self.dtkey)
             old_file = os.path.join(self.working_dir, self.dtkey + '.csv')
             self.logger.info(f'USER_DEFINED_LOAD_FILE: {old_file} WITH DTKEY {self.dtkey}')
             self.loadScoredataData(old_file)
@@ -74,7 +74,7 @@ class DataEngine:
         self.logger.info('***** ATTEMPTING TO LOAD GLOB.GLOB.DATA *****')
         for file in glob.glob("*.csv"):
             try:
-                self.logger.info('***** LOADING DATA FILE ', file, ' *****')
+                self.logger.info(f'***** LOADING DATA FILE {file} *****')
                 old_file = os.path.join(self.working_dir, file)
                 new_file = os.path.join(self.working_dir, file + '.old')
                 self.dtkey = Path(old_file).stem
@@ -101,9 +101,9 @@ class DataEngine:
             self.logger.info('USING DTKEY: ', self.dtkey)
             try:
                 self.logger.info('**********************************************************')
-                self.logger.info('Configuration File: ', self.configFile)
+                self.logger.info('Configuration File: %s', self.configFile)
                 config_source = os.path.join(self.cdir, self.configFile)
-                self.logger.info('Configuration Source: ', config_source)
+                self.logger.info('Configuration Source: %s', config_source)
                 self.config.read(config_source)
                 self.logger.info('**********************************************************')
 
@@ -153,15 +153,15 @@ class DataEngine:
                             mycursor.execute(sql, values)
                             loaded_records += 1
                             if (loaded_records % 1000) == 0:
-                                self.logger.info("   committing 1000 records: ", loaded_records)
+                                self.logger.info(f"   committing 1000 records: {loaded_records}")
                                 cnx.commit()
                     count += 1
 
                 cnx.commit()
-                self.logger.info("Total records scanned: ", count)
-                self.logger.info("Total records committed: ", loaded_records)
+                self.logger.info("Total records scanned: " + str(count))
+                self.logger.info("Total records committed: " + str(loaded_records))
             except Error as e:
-                self.logger.error('TethysCore::Error at line: ', count)
+                self.logger.error('TethysCore::Error at line: ' + str(count))
                 self.logger.error('===========================================')
                 self.logger.error(values)
                 self.logger.error('===========================================')
