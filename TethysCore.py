@@ -134,9 +134,9 @@ class DataEngine:
                        + " hash)"
                        + " values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)")
 
-                logger.info(sql)
+                self.logger.info(sql)
 
-                logger.info('**********************************************************')
+                self.logger.info('**********************************************************')
 
                 loaded_records = 0
                 for lines in csvFile:
