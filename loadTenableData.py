@@ -195,7 +195,10 @@ def loadScoredataData(datafile):
             print("Total records scanned: ", count)
             print("Total records loaded: ", loaded_records)
         except Error as e:
-            print('Error at line: ', count)
+            print('loadTenableData::Error at line: ', count)
+            print('===========================================')
+            print(values)
+            print('===========================================')
             print(e)
 
 def main(argv):

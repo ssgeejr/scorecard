@@ -1,0 +1,13 @@
+Invoke-Bloodhound -CollectionMethod all -Domain INHOUSE.WMMC -OutputDirectory C:\bloodhound
+
+
+Chagnes: 
+Working with Fortified (Kevin/Casey) we made some changes to our system that allowed for the proper capture and control of the AlienVault when BloodHound or SharpHound are attempting to scan AD 
+
+auditpol /set /subcategory:”Directory Service Access” /Success:Enable
+
+'YourGPOName' needs to be an existing Group Name
+Set-GPRegistryValue -Name "YourGPOName" -Key "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels\Security" -ValueName "4799" -Type DWORD -Value 0x7
+
+
+
