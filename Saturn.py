@@ -4,6 +4,7 @@ class Saturn:
     def __init__(self):
         # Get the path to the .openai directory in the user's home directory
         home_directory = os.path.expanduser('~')
+        print(home_directory)
         file_path = os.path.join(home_directory, '.tethys', 'tethys.api')
         with open(file_path, 'r') as f:
             contents = f.read()
