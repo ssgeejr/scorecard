@@ -1,6 +1,7 @@
 from Saturn import Saturn
 import requests,sys, base64, getopt, logging, os
 from logging.handlers import RotatingFileHandler
+from requests.auth import HTTPBasicAuth
 
 saturn = Saturn()
 api_token = saturn.get_api_key()
@@ -28,7 +29,58 @@ class ReportEngine:
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
         self.logger.info('******* Initializing JiraActivityReportEngine!!! *********')
+        self.jql = []
+        self.jql.append("status = Validation AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1)")
+        self.jql.append("status = Done AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1)")
+        self.jql.append("createdDate >= startOfDay(-1) and createdDate <= endOfDay(-1)")
+        self.jql.append("status = Validation AND statuscategorychangeddate >= startOfWeek(-1) and statusCategoryChangedDate <= endOfWeek(-1)")
+        self.jql.append("status = Done AND statuscategorychangeddate >= startOfWeek(-1) and statusCategoryChangedDate <= endOfWeek(-1)")
+        self.jql.append("createdDate >= startOfWeek(-1) and createdDate <= endOfWeek(-1)")
+        self.jql.append("status = Validation AND statuscategorychangeddate >= startOfMonth(-1) and statusCategoryChangedDate <= endOfMonth(-1)")
+        self.jql.append("status = Done AND statuscategorychangeddate >= startOfMonth(-1) and statusCategoryChangedDate <= endOfMonth(-1)")
+        self.jql.append("createdDate >= startOfMonth(-1) and createdDate <= endOfMonth(-1)")
+        self.jqltitle = []
+        self.jqltitle.append("Validated Yesterday")
+        self.jqltitle.append("Done Yesterday")
+        self.jqltitle.append("Created Yesterday")
+        self.jqltitle.append("Validated Last Week")
+        self.jqltitle.append("Done Last Week")
+        self.jqltitle.append("Created Last Week")
+        self.jqltitle.append("Validated Last Month")
+        self.jqltitle.append("Done Last Month")
+        self.jqltitle.append("Created Last Month")
 
+    def validatedYesterday(self):
+
+        try:
+            #jql_query = "status = Done AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1)"
+            url = f"{jira_url}/rest/api/3/search"
+            for i in range(9):
+
+                params = {
+                    "jql": self.jql[i],
+                    "maxResults": 100,  # Optional: Change if you want to limit the results
+                }
+                auth = HTTPBasicAuth(email, api_token)
+                headers = {
+                    "Accept": "application/json"
+                }
+                response = requests.get(url, headers=headers, auth=auth, params=params)
+                print(f"Reporting criteria: {self.jqltitle[i]}")
+                if response.status_code == 200:
+                    #print('RESPONSE_CODE_200')
+                    data = response.json()
+                    if data['total'] == 0:
+                        print('No issues found for given period ... ')
+                    else:
+                        for issue in data['issues']:
+                            print(f"Key: {issue['key']}, Summary: {issue['fields']['summary']}")
+                else:
+                    self.logger.error(f"Error fetching issue: {response.status_code} - {response.text}")
+                print('-----------------------------------------------------------------------------')
+        except Exception as e:
+            self.logger.error("An error occurred in data processing ...")
+            self.logger.error(e)
 
     def loadQueryData(self):
         #/ rest / api / 3 / search?jql = filter = {filter_id}
@@ -110,7 +162,7 @@ class ReportEngine:
             elif opt in "-j":
                 jiraonly = True
 
-        self.loadQueryData()
+        self.validatedYesterday()
 
 if __name__ == "__main__":
     tethys = ReportEngine()
