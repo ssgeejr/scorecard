@@ -2,11 +2,15 @@ from Saturn import Saturn
 import requests,sys, base64, getopt, logging, os
 from logging.handlers import RotatingFileHandler
 from requests.auth import HTTPBasicAuth
+from datetime import datetime,timedelta
 
 saturn = Saturn()
 api_token = saturn.get_api_key()
 email = saturn.get_user_id()
 jira_url = saturn.get_jira_url()
+today = datetime.now()
+yesterday = today - timedelta(days=1)
+formatted_yesterday = yesterday.strftime('%m/%d/%y')
 
 class ReportEngine:
     def __init__(self):
@@ -40,7 +44,7 @@ class ReportEngine:
         self.jql.append("status = Done AND statuscategorychangeddate >= startOfMonth(-1) and statusCategoryChangedDate <= endOfMonth(-1)")
         self.jql.append("createdDate >= startOfMonth(-1) and createdDate <= endOfMonth(-1)")
         self.jqltitle = []
-        self.jqltitle.append("Validated Yesterday")
+        self.jqltitle.append(f"Validated Yesterday [{formatted_yesterday}]")
         self.jqltitle.append("Done Yesterday")
         self.jqltitle.append("Created Yesterday")
         self.jqltitle.append("Validated Last Week")
@@ -74,10 +78,16 @@ class ReportEngine:
                         print('No issues found for given period ... ')
                     else:
                         for issue in data['issues']:
-                            print(f"Key: {issue['key']}, Summary: {issue['fields']['summary']}")
+                            date_object = datetime.strptime(f"{issue['fields']['created']}", '%Y-%m-%dT%H:%M:%S.%f%z')
+                            print(date_object)
+                            print(f"Key: {issue['key']}, Priority: {issue['fields']['priority']['name']}, Created {date_object.strftime('%m/%d/%y')}, Summary: {issue['fields']['summary']}")
+                            break
+
                 else:
                     self.logger.error(f"Error fetching issue: {response.status_code} - {response.text}")
                 print('-----------------------------------------------------------------------------')
+
+                break
         except Exception as e:
             self.logger.error("An error occurred in data processing ...")
             self.logger.error(e)
