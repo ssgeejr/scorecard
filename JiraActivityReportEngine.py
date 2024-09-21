@@ -71,6 +71,10 @@ class ReportEngine:
                 }
                 response = requests.get(url, headers=headers, auth=auth, params=params)
                 print(f"Reporting criteria: {self.jqltitle[i]}")
+
+                #The URL for the issue is https://wmmc.atlassian.net/browse/{issue['key']}
+
+
                 if response.status_code == 200:
                     #print('RESPONSE_CODE_200')
                     data = response.json()
