@@ -98,7 +98,7 @@ class DataEngine:
             # reading the CSV file
             csvFile = csv.reader(file)
             count = 0
-            self.logger.info('USING DTKEY: ', self.dtkey)
+            self.logger.info(f'USING DTKEY: {self.dtkey}')
             try:
                 self.logger.info('**********************************************************')
                 self.logger.info('Configuration File: %s', self.configFile)
@@ -155,6 +155,7 @@ class DataEngine:
                             if (loaded_records % 1000) == 0:
                                 self.logger.info(f"   committing 1000 records: {loaded_records}")
                                 cnx.commit()
+                                break
                     count += 1
 
                 cnx.commit()
