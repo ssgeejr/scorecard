@@ -155,7 +155,6 @@ class DataEngine:
                             if (loaded_records % 1000) == 0:
                                 self.logger.info(f"   committing 1000 records: {loaded_records}")
                                 cnx.commit()
-                                break
                     count += 1
 
                 cnx.commit()

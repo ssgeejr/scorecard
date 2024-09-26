@@ -135,7 +135,7 @@ class JiraEngine:
                         combined_string = vulnerability + '\r\n' + details
                         #                    print(combined_string)
                         priority, jiraPriority, due_date = self.fetchPriority(rid)
-                        logger.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
+                        self.logger.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
                         self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
