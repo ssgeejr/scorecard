@@ -40,6 +40,7 @@ class JiraEngine:
         current_date = datetime.now()
         self.year = current_date.strftime("%Y")
 
+# ******************************************************************************************
         log_file = 'tethys.jira-engine.log'
         max_file_size = 5 * 1024 * 1024  # 5 MB
         backup_count = 5
