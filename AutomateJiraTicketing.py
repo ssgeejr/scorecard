@@ -36,12 +36,18 @@ class JiraEngine:
         self.userDefinedKey = config.userDefinedKey
         self.configFile = config.configFile
         self.cdir = config.cdir
+
         self.dateTimeKey = ''
         current_date = datetime.now()
         self.year = current_date.strftime("%Y")
 
+
+
 # ******************************************************************************************
-        log_file = 'tethys.jira-engine.log'
+
+        log_file = f'{self.cdir}{os.sep}tethys.jira-engine.log'
+        #print(f'>>>>>>>>>>>>>>>>>>>>> {log_file}')
+        #exit(-1)
         max_file_size = 5 * 1024 * 1024  # 5 MB
         backup_count = 5
         if os.path.exists(log_file):
