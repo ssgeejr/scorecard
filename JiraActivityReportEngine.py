@@ -74,7 +74,6 @@ class ReportEngine:
 
                 #The URL for the issue is https://wmmc.atlassian.net/browse/{issue['key']}
 
-
                 if response.status_code == 200:
                     #print('RESPONSE_CODE_200')
                     data = response.json()
@@ -83,15 +82,11 @@ class ReportEngine:
                     else:
                         for issue in data['issues']:
                             date_object = datetime.strptime(f"{issue['fields']['created']}", '%Y-%m-%dT%H:%M:%S.%f%z')
-                            print(date_object)
                             print(f"Key: {issue['key']}, Priority: {issue['fields']['priority']['name']}, Created {date_object.strftime('%m/%d/%y')}, Summary: {issue['fields']['summary']}")
-                            break
-
                 else:
                     self.logger.error(f"Error fetching issue: {response.status_code} - {response.text}")
                 print('-----------------------------------------------------------------------------')
 
-                break
         except Exception as e:
             self.logger.error("An error occurred in data processing ...")
             self.logger.error(e)
