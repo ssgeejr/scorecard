@@ -54,7 +54,40 @@ class ReportEngine:
         self.jqltitle.append("Done Last Month")
         self.jqltitle.append("Created Last Month")
 
-    def validatedYesterday(self):
+        self.run_daily_report = True
+        self.run_weekly_report = today.weekday() == 0
+        self.run_monthly_report = today.day == 1
+        self.send_report_email = True
+
+    def determineReportParameters(self):
+        try:
+            print('determining date to run')
+
+            if self.run_daily_report:
+                print(f'Run Daily Report (RUN_DAILY_REPORT {self.run_daily_report})')
+
+            if self.run_weekly_report:
+                print(f'Run Weekly Report (RUN_WEEKLY_REPORT {self.run_weekly_report})')
+
+            if self.run_monthly_report:
+                print(f'Run Monthly Report (RUN_MONTHLY_REPORT {self.run_monthly_report})')
+
+
+
+        except Exception as e:
+            print('blob')
+
+
+    def runWeeklyReport(self):
+        print('*****WEEKLY*****')
+    def runMonthlyReport(self):
+        print('*****MONTHLY*****')
+
+
+    def runDailyReport(self):
+        print('*****DAILY*****')
+        if 1==1:
+            exit(-1)
 
         try:
             #jql_query = "status = Done AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1)"
@@ -143,35 +176,72 @@ class ReportEngine:
 
     def main(self, *argv):
         try:
-            opts, args = getopt.getopt(argv, "h:c:p:w:a:jx")
+            opts, args = getopt.getopt(argv, "d:hewmabcx")
         except getopt.GetoptError as e:
             print('>>>> ERROR: %s' % str(e))
             sys.exit(2)
-        jiraonly = False
+
+        only_key = 0
         for opt, arg in opts:
             if opt == '-h':
-                print('dataloader.py -h \nHelp Message')
-                print('dataloader.py -x \nSkip the Jira Section and only do the data load')
-                print('dataloader.py -p <date>')
-                print('dataloader.py -c{config.file}')
-                print('dataloader.py -p date')
-                print('dataloader.py -w{working.dir}')
+                print('---RUNTIME PARAMETERS---')
+                print('python JiraActivityReportEngine.py -h #Help Message')
+                print('python JiraActivityReportEngine.py -d date  #set the runtime date')
+                print('python JiraActivityReportEngine.py -e #run the daily report')
+                print('python JiraActivityReportEngine.py -w #run the weekly report')
+                print('python JiraActivityReportEngine.py -m #run the monthly report')
+                print('python JiraActivityReportEngine.py -a #run ONLY the daily report')
+                print('python JiraActivityReportEngine.py -b #run ONLY the monthly report')
+                print('python JiraActivityReportEngine.py -c #run ONLY the monthly report')
+                print('python JiraActivityReportEngine.py -x #do not send the email')
+                print('------------------------')
                 sys.exit()
             elif opt in "-x":
-                self.runJira = False
-            elif opt in "-c":
-                self.config.configFile = arg
-            elif opt in "-a":
-                self.config.user_id = arg
-            elif opt in ("-p", "--pkey"):
-                self.config.userDefinedKey = True
-                self.config.dtkey = arg
+                self.sendEmail = False
+                print('Report will [NOT] send email')
+            elif opt in "-e":
+                self.run_daily_report = True
+                print('forcing daily report')
             elif opt in "-w":
-                self.config.working_dir = arg
-            elif opt in "-j":
-                jiraonly = True
+                self.run_weekly_report = True
+                print('forcing weekly report')
+            elif opt in "-m":
+                print('forcing monthly report')
+            elif opt in "-a":
+                only_key += 1
+            elif opt in "-b":
+                only_key += 1
+            elif opt in "-c":
+                only_key += 1
 
-        self.validatedYesterday()
+
+
+
+        if only_key > 1:
+            print("Exactly one of the argument -a, -b, or -c must be provided.")
+            exit(-1)
+
+        if only_key == 0:
+            print('ONLY running DAILY report')
+            self.run_daily_report = True
+            self.run_weekly_report = False
+            self.run_monthly_report = False
+        elif only_key == 1:
+            print('ONLY running WEEKLY report')
+            self.run_daily_report = False
+            self.run_weekly_report = True
+            self.run_monthly_report = False
+        elif only_key == 2:
+            print('ONLY running MONTHLY report')
+            self.run_daily_report = False
+            self.run_weekly_report = False
+            self.run_monthly_report = True
+
+        print(f'DAILY:  {self.run_daily_report}')
+        print(f'WEEKLY:  {self.run_weekly_report}')
+        print(f'MONTHLY:  {self.run_monthly_report}')
+
+        self.determineReportParameters()
 
 if __name__ == "__main__":
     tethys = ReportEngine()
