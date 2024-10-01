@@ -3,6 +3,7 @@ import requests,sys, base64, getopt, logging, os
 from logging.handlers import RotatingFileHandler
 from requests.auth import HTTPBasicAuth
 from datetime import datetime,timedelta
+import pandas as pd
 
 saturn = Saturn()
 api_token = saturn.get_api_key()
@@ -58,6 +59,7 @@ class ReportEngine:
         self.run_weekly_report = today.weekday() == 0
         self.run_monthly_report = today.day == 1
         self.send_report_email = True
+        self.email_list = []
 
     def determineReportParameters(self):
         try:
@@ -72,7 +74,26 @@ class ReportEngine:
             if self.run_monthly_report:
                 print(f'Run Monthly Report (RUN_MONTHLY_REPORT {self.run_monthly_report})')
 
+            data = [
+                "John,Doe,30,john@example.com",
+                "Jane,Smith,25,jane@example.com",
+                "Mike,Johnson,40,mike@example.com"
+            ]
 
+            headers = ["First Name", "Last Name", "Age", "Email"]
+            result = f"{headers[0]:<12} {headers[1]:<12} {headers[2]:<5} {headers[3]:<20}\n"
+            result += "-" * 50 + "\n"
+
+            # Format each row
+            for row in data:
+                row_data = row.split(',')
+                result += f"{row_data[0]:<12} {row_data[1]:<12} {row_data[2]:<5} {row_data[3]:<20}\n"
+
+            print (result)
+#            parsed_data = [row.split(',') for row in data]
+#            df = pd.DataFrame(parsed_data, columns=["First Name", "Last Name", "Age", "Email"])
+#            df.to_excel("output.xlsx", index=False)
+            print("Data has been written to output.xlsx")
 
         except Exception as e:
             print('blob')
@@ -176,7 +197,7 @@ class ReportEngine:
 
     def main(self, *argv):
         try:
-            opts, args = getopt.getopt(argv, "d:hewmabcx")
+            opts, args = getopt.getopt(argv, "d:hewmabcx", ["emails="])
         except getopt.GetoptError as e:
             print('>>>> ERROR: %s' % str(e))
             sys.exit(2)
@@ -194,6 +215,7 @@ class ReportEngine:
                 print('python JiraActivityReportEngine.py -b #run ONLY the monthly report')
                 print('python JiraActivityReportEngine.py -c #run ONLY the monthly report')
                 print('python JiraActivityReportEngine.py -x #do not send the email')
+                print('python JiraActivityReportEngine.py --emails "one@mail.com, two@mail.com, three@mail.com"')
                 print('------------------------')
                 sys.exit()
             elif opt in "-x":
@@ -213,6 +235,9 @@ class ReportEngine:
                 only_key += 1
             elif opt in "-c":
                 only_key += 1
+            elif opt == '--emails':
+                # Split the comma-separated email addresses and strip any whitespace
+                self.email_list = [email.strip() for email in arg.split(',')]
 
 
 
@@ -240,6 +265,11 @@ class ReportEngine:
         print(f'DAILY:  {self.run_daily_report}')
         print(f'WEEKLY:  {self.run_weekly_report}')
         print(f'MONTHLY:  {self.run_monthly_report}')
+
+        if self.email_list:
+            print("Email addresses:", self.email_list)
+        else:
+            print("Using default mailing list")
 
         self.determineReportParameters()
 
