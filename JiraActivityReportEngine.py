@@ -59,7 +59,34 @@ class ReportEngine:
         self.email_list = []
 
     def determineReportParameters(self):
-
+        dailyjql = {
+            "validation": {
+                "title": "Validated Yesterday",
+                "sql": "status = Validation AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1) order by priority desc"
+            },
+            "done": {
+                "title": "Done Yesterday",
+                "sql": "status = Done AND statuscategorychangeddate >= startOfDay(-1) and statusCategoryChangedDate <= endOfDay(-1) order by priority desc"
+            },
+            "open": {
+                "title": "Created Yesterday",
+                "sql": "createdDate >= startOfDay(-1) and createdDate <= endOfDay(-1) order by priority desc"
+            }
+        }
+        weeklyjql = {
+            "validation": {
+                "title": "Validated Last Week",
+                "sql": "status = Validation AND statuscategorychangeddate >= startOfWeek(-1) and statusCategoryChangedDate <= endOfWeek(-1) order by priority desc"
+            },
+            "done": {
+                "title": "Done Last Week",
+                "sql": "status = Done AND statuscategorychangeddate >= startOfWeek(-1) and statusCategoryChangedDate <= endOfWeek(-1) order by priority desc"
+            },
+            "open": {
+                "title": "Created Last Week",
+                "sql": "createdDate >= startOfWeek(-1) and createdDate <= endOfWeek(-1) order by priority desc"
+            }
+        }
         monthlyjql = {
             "validation": {
                 "title": "Validated Last Month",
@@ -79,13 +106,15 @@ class ReportEngine:
             #print('determining date to run')
 
             if self.run_daily_report:
-                print(f'Run Daily Report (RUN_DAILY_REPORT {self.run_daily_report})')
+                self.logger.info(f'Run Daily Report (RUN_DAILY_REPORT {self.run_daily_report})')
+                self.runReport(dailyjql)
 
             if self.run_weekly_report:
-                print(f'Run Weekly Report (RUN_WEEKLY_REPORT {self.run_weekly_report})')
+                self.logger.info(f'Run Weekly Report (RUN_WEEKLY_REPORT {self.run_weekly_report})')
+                self.runReport(weeklyjql)
 
             if self.run_monthly_report:
-                print(f'Run Monthly Report (RUN_MONTHLY_REPORT {self.run_monthly_report})')
+                self.logger.info(f'Run Monthly Report (RUN_MONTHLY_REPORT {self.run_monthly_report})')
                 self.runReport(monthlyjql)
 
         except Exception as e:
@@ -94,14 +123,16 @@ class ReportEngine:
 
     def runReport(self, datadict):
         headers = ["Issue", "Level", "Created", "Description"]
-        result = f"{headers[0]:<12} {headers[1]:<10} {headers[2]:<12} {headers[3]:<256}\n"
-        result += "-" * 50 + "\n"
+        result_header = f"{headers[0]:<12} {headers[1]:<10} {headers[2]:<12} {headers[3]:<256}\n"
+        #result = result_header + "-" * 50 + "\n"
+        result = ''
 
         try:
             for query_name, query_data in datadict.items():
+                result += "-" * 50 + "\n"
                 result += f"{query_data['title']:<30}\n"
-                url = f"{jira_url}/rest/api/3/search"
 
+                url = f"{jira_url}/rest/api/3/search"
                 params = {
                     "jql": query_data['sql'],
                     "maxResults": 250,  # Optional: Change if you want to limit the results
@@ -111,19 +142,24 @@ class ReportEngine:
                     "Accept": "application/json"
                 }
                 response = requests.get(url, headers=headers, auth=auth, params=params)
-                print(f"Reporting criteria: {query_data['title']}")
+                #print(f"Reporting criteria: {query_data['title']}")
                 if response.status_code == 200:
                     #print('RESPONSE_CODE_200')
                     data = response.json()
+                    #print(f">>>>>>>>>>>>>>>>>> {data['total']}")
                     if data['total'] == 0:
-                        print('No issues found for given period ... ')
+
+                        result += 'No issues found for given period ... \n'
                     else:
+                        result += result_header + "-" * 50 + "\n"
                         for issue in data['issues']:
                             date_object = datetime.strptime(f"{issue['fields']['created']}", '%Y-%m-%dT%H:%M:%S.%f%z')
                             result += f"{issue['key']:<12} {issue['fields']['priority']['name']:<10} {date_object.strftime('%m/%d/%y'):<12} {issue['fields']['summary']:<256}\n"
+                        #result += "-" * 50 + "\n"
                 else:
                     self.logger.error(f"Error fetching issue: {response.status_code} - {response.text}")
-            print('-----------------------------------------------------------------------------')
+            #print('-----------------------------------------------------------------------------')
+            result += "-" * 50 + "\n"
             print(result)
 
 
@@ -187,13 +223,13 @@ class ReportEngine:
             url = f'{jira_url}/rest/api/3/search?jql=filter={filter_id}'
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                print('RESPONSE_CODE_200')
+                self.logger.info('RESPONSE_CODE_200')
                 obj = response.json()
                 issues = obj['issues']
                 for issue in issues:
                     self.logger.info(f"Issue key: {issue['key']}")
             else:
-                print(f"Error fetching issue: {response.status_code} - {response.text}")
+                self.logger.info(f"Error fetching issue: {response.status_code} - {response.text}")
         except Exception as e:
             self.logger.error("An error occurred in data processing ...")
             self.logger.error(e)
@@ -211,7 +247,7 @@ class ReportEngine:
         #response = requests.get(f'{jira_url}/rest/api/2/issue/{issue_key}', headers=headers)
 
         url = f'{jira_url}/rest/api/3/issue/{issue_key}'
-        print(url)
+        #print(url)
         response = requests.get(url, headers=headers)
 
         # Check the response
@@ -292,14 +328,14 @@ class ReportEngine:
             self.run_weekly_report = False
             self.run_monthly_report = True
 
-        print(f'DAILY:  {self.run_daily_report}')
-        print(f'WEEKLY:  {self.run_weekly_report}')
-        print(f'MONTHLY:  {self.run_monthly_report}')
+        self.logger.info(f'DAILY:  {self.run_daily_report}')
+        self.logger.info(f'WEEKLY:  {self.run_weekly_report}')
+        self.logger.info(f'MONTHLY:  {self.run_monthly_report}')
 
         if self.email_list:
-            print("Email addresses:", self.email_list)
+            self.logger.info("User provided Email addresses:", self.email_list)
         else:
-            print("Using default mailing list")
+            self.logger.info("Using default mailing list")
 
         self.determineReportParameters()
 
