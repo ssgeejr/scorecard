@@ -184,6 +184,7 @@ class ReportEngine:
                 self.run_weekly_report = True
                 print('forcing weekly report')
             elif opt in "-m":
+                self.run_monthly_report = True
                 print('forcing monthly report')
             elif opt in "-a":
                 key_count += 1
