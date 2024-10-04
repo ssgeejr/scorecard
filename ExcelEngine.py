@@ -44,10 +44,10 @@ class XEngine:
 if __name__ == "__main__":
     xengine = XEngine()
     data = [
-        ["ISSUE-001", "Critical", "2024-01-01", "System outage in region A"],
-        ["ISSUE-002", "High", "2024-01-02", "Database connection issue"],
-        ["ISSUE-003", "Medium", "2024-01-03", "Minor UI bug in dashboard"],
-        ["ISSUE-004", "Low", "2024-01-04", "Typo in help documentation"]
+        ["ISSUE-001", "Critical", "01/01/2024", "System outage in region A"],
+        ["ISSUE-002", "High", "01/02/2024", "Database connection issue"],
+        ["ISSUE-003", "Medium", "01/03/2024", "Minor UI bug in dashboard"],
+        ["ISSUE-004", "Low", "01/04/2024", "Typo in help documentation"]
     ]
 
     xengine.initialize('AKUNA-MATADA', data)
