@@ -36,21 +36,36 @@ class JiraEngine:
         self.userDefinedKey = config.userDefinedKey
         self.configFile = config.configFile
         self.cdir = config.cdir
+
         self.dateTimeKey = ''
         current_date = datetime.now()
         self.year = current_date.strftime("%Y")
-        log_file = 'tethys.jira-engine.log'
+
+
+
+# ******************************************************************************************
+
+        log_file = f'{self.cdir}{os.sep}tethys.jira-engine.log'
+        #print(f'>>>>>>>>>>>>>>>>>>>>> {log_file}')
+        #exit(-1)
         max_file_size = 5 * 1024 * 1024  # 5 MB
         backup_count = 5
         if os.path.exists(log_file):
             os.remove(log_file)
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.setLevel(logging.INFO)
+
         file_handler = RotatingFileHandler(filename=log_file, maxBytes=max_file_size, backupCount=backup_count)
         log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(log_format)
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.INFO)
-        self.logger.addHandler(file_handler)
+        file_handler.setLevel(logging.INFO)
 
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
         self.logger.info('******* Initializing Tethys Jira Engine *********')
 
     def fetchPriority(self, risk):
@@ -126,7 +141,7 @@ class JiraEngine:
                         combined_string = vulnerability + '\r\n' + details
                         #                    print(combined_string)
                         priority, jiraPriority, due_date = self.fetchPriority(rid)
-                        logger.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
+                        self.logger.info(f"Priority [{priority}] Due Date [{due_date}] Issue PluginID [{vrow[1]}] Server Count [{vrow[0]}] Title [{vrow[2]}]")
                         self.searchForIssue(rid, vrow[1], vrow[2], combined_string, priority, jiraPriority, due_date, vrow[0])
                     vCount += 1
                     print('********************* RID [%s] ROW ID [%s] ********************' % (rid, vCount))
@@ -165,15 +180,15 @@ class JiraEngine:
             issues = response.json()["issues"]
 
             if len(issues) == 0:
-                print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
-                logger.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
+                #print(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
+                self.logger.info(f"Failed to find existing issue. Status code: {priority}, {pluginID} and not 'Done' * Attempting to create new Jira Ticket")
                 self.createNewJiraTicket(rid, pluginID, title, description, priority, jiraPriority, due_date)
             else:
-                print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
-                logger.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+                #print(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
+                self.logger.info(f"Found {len(issues)} issues with the specified labels and not in the 'Done' status category:")
                 for issue in issues:
-                    print(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
-                    logger.info(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                    #print(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
+                    self.logger.info(f"[~] {issue['key']}: {issue['fields']['summary']} | Status: {issue['fields']['status']['name']} | Labels: {issue['fields']['labels']}")
                     comment = ("Existing issue found on %s by Tethys CyberSecurity Bot\r\nThe Vulnerability Count is %s" % (self.today, vcount))
                     self.addIssueComment(issue['key'], comment)
         else:
@@ -241,13 +256,12 @@ class JiraEngine:
 
         # Check the response
         if response.status_code == 201:
-            print(f"Jira Ticket created successfully: {response.json()['key']}")
+            #print(f"Jira Ticket created successfully: {response.json()['key']}")
 #            print(f"{response.json()['key']}\t{priority}\t{due_date}\t{pluginID}\t{title}")
-            print(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: {pluginID}, {priority}")
+            #print(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: {pluginID}, {priority}")
 #            logging.info(f"Created new Jira Ticket {response.json()['key']} for PluginID: {pluginID}")
             self.logger.info(f"[+] {response.json()['key']}: {title} | Status: {jiraPriority} | Labels: [{pluginID}, {priority}]")
         else:
-            print(f"Error creating task: {response.status_code} - {response.text}")
             self.logger.error(f"Error creating new ticket!! PluginID: {pluginID} Response Code: {response.status_code} - {response.text}")
             #logging.error(f"Failed to create new Jira Ticket for PluginID: {pluginID}")
 
@@ -284,9 +298,9 @@ class JiraEngine:
             data=json.dumps(data),
         )
         if response.status_code == 201:
-            print(f"Comment added successfully to issue {issue_key}.")
+            #print(f"Comment added successfully to issue {issue_key}.")
             self.logger.info(f"Successfully added comments to issue {issue_key}.")
         else:
-            print(f"Failed to add comment to issue. Status code: {response.status_code}")
+            #print(f"Failed to add comment to issue. Status code: {response.status_code}")
             self.logger.error(f"Failed to update issue {issue_key} for reason {response.text}")
-            print(response.text)
+            #print(response.text)

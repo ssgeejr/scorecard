@@ -1,5 +1,11 @@
 # scorecard
-Import Data and Calculate monthly scorecard
+
+#JiraActivityReportEngine
+
+pip install pandas openpyxl
+
+
+#Import Data and Calculate monthly scorecard
 
 
 VERSION 2.0:
