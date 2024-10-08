@@ -232,9 +232,7 @@ class ReportEngine:
         else:
             self.logger.info("Using default mailing list")
 
-        print(f'>>>> USE EXCEL: {self.use_excel}')
-
-        #self.determineReportParameters()
+        self.determineReportParameters()
 
 if __name__ == "__main__":
     tethys = ReportEngine()
