@@ -15,6 +15,9 @@ class JiraEngine:
         self.assignee_accountId=at
 
     def __init__(self, config: Config):
+
+        print('alpha dog')
+
         self.saturn = Saturn()
         self.api_token = self.saturn.get_api_key()
         self.email = self.saturn.get_user_id()
@@ -40,8 +43,6 @@ class JiraEngine:
         self.dateTimeKey = ''
         current_date = datetime.now()
         self.year = current_date.strftime("%Y")
-
-
 
 # ******************************************************************************************
 
@@ -101,7 +102,7 @@ class JiraEngine:
             self.config.read(config_source)
             print('**********************************************************')
 
-            cnx = mysql.connector.connect(user=self.config['tethys']['user'],
+            self.cnx = mysql.connector.connect(user=self.config['tethys']['user'],
                                           password=self.config['tethys']['passwd'],
                                           host=self.config['tethys']['host'],
                                           database=self.config['tethys']['db'])
@@ -125,13 +126,13 @@ class JiraEngine:
             for rid in values_list:
                 print('********************* Initiate Search for Risk ID [%s] ********************' % (rid))
                 vValues = (self.dateTimeKey, rid)
-                topCursor = cnx.cursor()
+                topCursor = self.cnx.cursor()
                 topCursor.execute(fetchTopVul, vValues)
                 vulResult = topCursor.fetchall()
                 vCount = 0
                 for vrow in vulResult:
                     vulnerability = ('Count: %s \r\nPluginID: %s\r\nName: %s\r\n' % (vrow[0], vrow[1], vrow[2]))
-                    detailCursor = cnx.cursor()
+                    detailCursor = self.cnx.cursor()
                     values = (self.dateTimeKey, rid, vrow[1])
                     detailCursor.execute(fetchDetails, values)
                     detailResult = detailCursor.fetchall()
@@ -213,6 +214,16 @@ class JiraEngine:
             'Content-Type': 'application/json',
             'Authorization': f'Basic {base64.b64encode(f"{self.email}:{self.api_token}".encode("utf-8")).decode("utf-8")}'
         }
+        hostCursor = self.cnx.cursor()
+        hostlistsql = ("select distinct host as clienthost"
+                    " from scorecard"
+                    " where pluginid = %s and dtkey = %s")
+        hValues = (pluginID, self.dateTimeKey)
+        hostCursor.execute(hostlistsql, hValues)
+        hostResult = hostCursor.fetchall()
+        description += "\r\n************** HOSTS **************\r\n"
+        for hrow in hostResult:
+            description += hrow[0] + "\r\n"
 
         # Set up the request payload
         payload = {
@@ -304,3 +315,15 @@ class JiraEngine:
             #print(f"Failed to add comment to issue. Status code: {response.status_code}")
             self.logger.error(f"Failed to update issue {issue_key} for reason {response.text}")
             #print(response.text)
+
+
+if __name__ == "__main__":
+    print('...0001...')
+    cfg = Config()
+    cfg.configFile = 'tethys.ini'
+    print('...0002...')
+    jmotor = JiraEngine(cfg)
+    print('...0003...')
+    jmotor.fetchSQLData('1124A')
+    print('...0004...')
+
