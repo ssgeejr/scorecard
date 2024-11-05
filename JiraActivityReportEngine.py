@@ -40,6 +40,7 @@ class ReportEngine:
         self.run_monthly_report = today.day == 1
         self.send_report_email = True
         self.email_list = []
+        self.use_excel = False
 
     def determineReportParameters(self):
         dailyjql = {
@@ -152,7 +153,7 @@ class ReportEngine:
 
     def main(self, *argv):
         try:
-            opts, args = getopt.getopt(argv, "d:hewmabcx", ["emails="])
+            opts, args = getopt.getopt(argv, "d:hewmabcx", ["emails=", "excel"])
         except getopt.GetoptError as e:
             print('>>>> ERROR: %s' % str(e))
             sys.exit(2)
@@ -171,6 +172,7 @@ class ReportEngine:
                 print('python JiraActivityReportEngine.py -b #run ONLY the monthly report')
                 print('python JiraActivityReportEngine.py -c #run ONLY the monthly report')
                 print('python JiraActivityReportEngine.py -x #do not send the email')
+                print('python JiraActivityReportEngine.py --excel #do not use ascii reporting, instead attach an excel spreadsheet')
                 print('python JiraActivityReportEngine.py --emails "one@mail.com, two@mail.com, three@mail.com"')
                 print('------------------------')
                 sys.exit()
@@ -179,13 +181,13 @@ class ReportEngine:
                 print('Report will [NOT] send email')
             elif opt in "-e":
                 self.run_daily_report = True
-                print('forcing daily report')
+                self.logger.info('enforcing daily report')
             elif opt in "-w":
                 self.run_weekly_report = True
-                print('forcing weekly report')
+                self.logger.info('enforcing weekly report')
             elif opt in "-m":
                 self.run_monthly_report = True
-                print('forcing monthly report')
+                self.logger.info('enforcing monthly report')
             elif opt in "-a":
                 key_count += 1
                 only_key = 1
@@ -198,6 +200,8 @@ class ReportEngine:
             elif opt == '--emails':
                 # Split the comma-separated email addresses and strip any whitespace
                 self.email_list = [email.strip() for email in arg.split(',')]
+            elif opt == '--excel':
+                self.use_excel = True
 
         if key_count > 1:
             self.logger.info("Exactly one of the argument -a, -b, or -c must be provided.")
