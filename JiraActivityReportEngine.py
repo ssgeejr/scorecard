@@ -3,6 +3,7 @@ import requests,sys, base64, getopt, logging, os
 from logging.handlers import RotatingFileHandler
 from requests.auth import HTTPBasicAuth
 from datetime import datetime,timedelta
+from ExcelEngine import XEngine
 import pandas as pd
 
 saturn = Saturn()
@@ -41,6 +42,9 @@ class ReportEngine:
         self.send_report_email = True
         self.email_list = []
         self.use_excel = False
+
+        self.xengine = XEngine()
+        self.report_dict = {}
 
     def determineReportParameters(self):
         dailyjql = {
@@ -101,11 +105,18 @@ class ReportEngine:
                 self.logger.info(f'Run Monthly Report (RUN_MONTHLY_REPORT {self.run_monthly_report})')
                 self.runReport(monthlyjql)
 
+            if self.use_excel:
+                print('Report exported successfully to excel file ... ')
+                for category, catissues in self.report_dict.items():
+                    self.xengine.initialize(category, catissues)
+
+
         except Exception as e:
             self.logger.error("An error occurred in determining runtime ...")
             self.logger.error(e)
 
     def runReport(self, datadict):
+
         headers = ["Issue", "Level", "Created", "Description"]
         result_header = f"{headers[0]:<12} {headers[1]:<10} {headers[2]:<12} {headers[3]:<256}\n"
         #result = result_header + "-" * 50 + "\n"
@@ -113,8 +124,10 @@ class ReportEngine:
 
         try:
             for query_name, query_data in datadict.items():
+                queryData = []
                 result += "-" * 50 + "\n"
                 result += f"{query_data['title']:<30}\n"
+                print(query_data['title'])
 
                 url = f"{jira_url}/rest/api/3/search"
                 params = {
@@ -136,15 +149,30 @@ class ReportEngine:
                         result += 'No issues found for given period ... \n'
                     else:
                         result += result_header + "-" * 50 + "\n"
+
                         for issue in data['issues']:
                             date_object = datetime.strptime(f"{issue['fields']['created']}", '%Y-%m-%dT%H:%M:%S.%f%z')
-                            result += f"{issue['key']:<12} {issue['fields']['priority']['name']:<10} {date_object.strftime('%m/%d/%y'):<12} {issue['fields']['summary']:<256}\n"
+                            if self.use_excel:
+                                #print('***** USING EXCEL EXPORT FUNCTION *****')
+                                xissue = [issue['key'],issue['fields']['priority']['name'],date_object.strftime('%m/%d/%y'),issue['fields']['summary']]
+                                queryData.append(xissue)
+                            else:
+                                result += f"{issue['key']:<12} {issue['fields']['priority']['name']:<10} {date_object.strftime('%m/%d/%y'):<12} {issue['fields']['summary']:<256}\n"
                         #result += "-" * 50 + "\n"
                 else:
                     self.logger.error(f"Error fetching issue: {response.status_code} - {response.text}")
+
+                if self.use_excel:
+                    if not queryData:
+                        #xissue =
+                        queryData.append(['','','','NO RECORDS FOUND'])
+                    #xengine.initialize(query_data['title'], queryData)
+                    self.report_dict[query_data['title']] = queryData
+                else:
+                    print(result)
+
             #print('-----------------------------------------------------------------------------')
             result += "-" * 50 + "\n"
-            print(result)
 
 
         except Exception as e:
