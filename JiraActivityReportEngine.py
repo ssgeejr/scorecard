@@ -110,7 +110,6 @@ class ReportEngine:
                 for category, catissues in self.report_dict.items():
                     self.xengine.initialize(category, catissues)
 
-
         except Exception as e:
             self.logger.error("An error occurred in determining runtime ...")
             self.logger.error(e)
@@ -127,7 +126,7 @@ class ReportEngine:
                 queryData = []
                 result += "-" * 50 + "\n"
                 result += f"{query_data['title']:<30}\n"
-                print(query_data['title'])
+                #print(query_data['title'])
 
                 url = f"{jira_url}/rest/api/3/search"
                 params = {
@@ -164,9 +163,7 @@ class ReportEngine:
 
                 if self.use_excel:
                     if not queryData:
-                        #xissue =
                         queryData.append(['','','','NO RECORDS FOUND'])
-                    #xengine.initialize(query_data['title'], queryData)
                     self.report_dict[query_data['title']] = queryData
                 else:
                     print(result)
