@@ -1,0 +1,4 @@
+[Credentials]
+client_id = XXX_client_id
+client_secret = XXX_client_secret
+tenant_id = XXX_tenant_id
