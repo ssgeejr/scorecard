@@ -1,0 +1,70 @@
+To send an email with an Excel attachment (results.xlsx) from your Microsoft 365 (formerly Office 365) account using Python, you can use the O365 Python library, which simplifies the interaction with Microsoft Graph and Office 365 APIs. This method will allow you to securely send emails and handle attachments.
+
+Step 1: Installation
+First, you need to install the O365 library if you haven't already:
+
+bash
+Copy code
+pip install O365
+Step 2: Register Your Application
+You must register your application with Azure to obtain the necessary credentials (client ID and client secret) and configure the permissions:
+
+Go to the Azure Portal.
+Navigate to "Azure Active Directory" -> "App registrations" -> "New registration".
+Name your application and set the redirect URI (web) to http://localhost:8000 (you can adjust this as needed).
+Once registered, note down the Application (client) ID and create a new Client Secret under "Certificates & secrets".
+Set API permissions for your application in "API permissions" -> "Add a permission" -> "Microsoft Graph" -> "Delegated permissions":
+Mail.Send - allows sending mail on behalf of the signed-in user.
+Step 3: Python Script to Send an Email
+Here is a Python script that authenticates to your Microsoft 365 account and sends an email with an Excel file attached:
+
+python
+Copy code
+from O365 import Account, FileSystemTokenBackend
+
+# Define your credentials
+CLIENT_ID = 'your_client_id_here'
+CLIENT_SECRET = 'your_client_secret_here'
+TENANT_ID = 'your_tenant_id_here'
+
+# Set the token backend for caching
+token_backend = FileSystemTokenBackend(token_path='.', token_filename='o365_token.txt')
+
+# Initialize the Account
+credentials = (CLIENT_ID, CLIENT_SECRET)
+account = Account(credentials, token_backend=token_backend, tenant_id=TENANT_ID)
+
+# Authenticate the account (only needed when the token is not available or expired)
+if not account.is_authenticated:
+    # Will open a browser window for the login flow
+    account.authenticate(scopes=['basic', 'message_all'])
+
+# Get the mailbox
+mailbox = account.mailbox()
+
+# Create new message
+message = mailbox.new_message()
+
+# Set email properties
+message.to.add('recipient@example.com')
+message.subject = "Today's results"
+message.body = "Please find attached the results for today."
+
+# Add an attachment
+message.attachments.add('path_to_your_file/results.xlsx')
+
+# Send the email
+message.send()
+
+print("Email sent successfully!")
+Explanation
+Authentication: This script uses OAuth for a secure connection. The user will need to authenticate via a browser on the first run; the token will be saved for subsequent uses.
+Creating and Sending the Email: The script constructs an email, adds an attachment from the specified path, and sends it to the specified recipient.
+Step 4: Run the Script
+Run your script using Python. If it’s the first time or the token has expired, you will be redirected to a login page to authenticate.
+
+Important Considerations
+Security: Ensure your client ID and secret are kept secure and not exposed.
+Permission: Make sure the permissions in Azure are correctly set to avoid issues during authentication.
+Dependencies: The script assumes the presence of the results.xlsx file in the specified path. Make sure the file exists before running the script.
+This setup provides a comprehensive way to integrate Python with Microsoft 365 for sending emails with attachments in a secure and efficient manner.

@@ -170,8 +170,6 @@ class ReportEngine:
 
             #print('-----------------------------------------------------------------------------')
             result += "-" * 50 + "\n"
-
-
         except Exception as e:
             self.logger.error("An error occurred in data processing ...")
             self.logger.error(e)
