@@ -1,0 +1,4 @@
+#!/bin/bash
+cat tethys.jira-engine.log | grep + | cut -c38- > scanresults
+cat tethys.jira-engine.log | grep \~ | cut -c38- >> scanresults
+cat scanresults
