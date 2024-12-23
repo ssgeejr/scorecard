@@ -1,17 +1,19 @@
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font
+from datetime import datetime
 
-excel_file = "issues_report.xlsx"
 
 class XEngine:
 
     def __init__(self):
         # Get the path to the .openai directory in the user's home directory
+        date_str = datetime.now().strftime("%d%m%Y")
+        self.excel_file = f"weeklyJiraReport_{date_str}.xlsx"
         headers = ["Issue", "Level", "Created", "Description"]
         df = pd.DataFrame(columns=headers)
-        df.to_excel(excel_file, index=False)
-        wb = load_workbook(excel_file)
+        df.to_excel(self.excel_file, index=False)
+        wb = load_workbook(self.excel_file)
         ws = wb.active
         aheader = ws['A1']
         bheader = ws['B1']
@@ -25,11 +27,11 @@ class XEngine:
         ws.column_dimensions['B'].width = 12  # Level column
         ws.column_dimensions['C'].width = 12  # Created column
         ws.column_dimensions['D'].width = 250  # Description column
-        wb.save(excel_file)
-        print(f"Excel file '{excel_file}' created successfully with three data sets, titles in blue, and duplicated data.")
+        wb.save(self.excel_file)
+        print(f"Excel file '{self.excel_file}' created successfully with three data sets, titles in blue, and duplicated data.")
 
     def initialize(self, title, data):
-        wb = load_workbook(excel_file)
+        wb = load_workbook(self.excel_file)
         ws = wb.active
         num_rows = ws.max_row
         ws.merge_cells(f'A{num_rows + 1}:C{num_rows + 1}')  # Merging columns A, B, C
@@ -39,7 +41,7 @@ class XEngine:
         merged_cell.font = Font(bold=True, color="0000FF")  # Blue font color in hex
         for i, row in enumerate(data, start=num_rows + 2):
             ws.append(row)
-        wb.save(excel_file)
+        wb.save(self.excel_file)
 
 if __name__ == "__main__":
     xengine = XEngine()
